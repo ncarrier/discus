@@ -33,7 +33,7 @@ opts = {"placing": 0, "vfsing": 1, "reserved": 0}
 
 ##  Import modules used.
 
-import commands, getopt, os, string, sys, re
+import subprocess, getopt, os, string, sys, re
 try:
 	from statvfs import *
 except ImportError:
@@ -118,7 +118,7 @@ class Disk:
 
 		##  Keep reducing digits until there are 3 or less.
 		count = 0
-		while size > (0.9999999999 * pow(10L, 3)):
+		while size > (0.9999999999 * pow(10, 3)):
 
 			##  But don't let it get too small, either.
 
@@ -222,7 +222,7 @@ class Disk:
 			##  External stat program.
 
 			try:
-				stats = commands.getoutput(opts["stat_prog"] + " " + mount)
+				stats = subprocess.getoutput(opts["stat_prog"] + " " + mount)
 			except:
 				help("Discus requires either the Python statvfs module or the external stat program.")
 
@@ -251,9 +251,9 @@ class Disk:
 
 ##  Print version.
 def version():
-	print "Discus version %s by Stormy Henderson (stormy@raincrazy.com)." % \
-		VERSION
-	print "Home page: http://www.raincrazy.com/software/discus/"
+	print("Discus version %s by Stormy Henderson (stormy@raincrazy.com)." % \
+		VERSION)
+	print("Home page: http://www.raincrazy.com/software/discus/")
 	raise SystemExit
 
 
@@ -264,7 +264,7 @@ def help(text = ""):
 	##  Only print the general help if no specific message is provided.
 
 	if text == "":
-		print """Discus version %s, to display disk usage.
+		print("""Discus version %s, to display disk usage.
 Options are:
  -h, --help      display help
  -v, --version   display version
@@ -275,10 +275,10 @@ Options are:
  -d              show device instead of graph
  -c              disable color
  -r              count reserved space as used
-""" % VERSION
+""" % VERSION)
 
 	else:
-		print text
+		print(text)
 
 	raise SystemExit
 
@@ -383,7 +383,7 @@ def read_mounts():
 	##  provided by John Soward.
 
 	if mtab[0] == "!":
-		mtab = commands.getoutput(mtab[1:])
+		mtab = subprocess.getoutput(mtab[1:])
 		mtab = string.split(mtab, "\n")
 	else:
 		fp = open(opts["mtab"])
@@ -462,13 +462,13 @@ def main():
 	
 	##  Output a header line.
 
-	print format_header()
+	print(format_header())
 
 	##  Create a disk object for each mount, and print a report.
 
 	for count in range(0, len(devices)):
 		disk = Disk(devices[count], mounts[count])
-		print disk.report()
+		print(disk.report())
 	
 
 
@@ -481,12 +481,12 @@ if __name__ == "__main__":
 	##  file, if exists.
 
 	try:
-		execfile("/etc/discusrc")
+		exec(compile(open("/etc/discusrc", "rb").read(), "/etc/discusrc", 'exec'))
 	except IOError:
 		help("/etc/discusrc must exist and be readable.")
 
 	try:
-		execfile(os.environ['HOME'] + "/.discusrc")
+		exec(compile(open(os.environ['HOME'] + "/.discusrc", "rb").read(), os.environ['HOME'] + "/.discusrc", 'exec'))
 	except IOError:
 		pass
 
