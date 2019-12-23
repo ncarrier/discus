@@ -26,7 +26,7 @@ opts["mtab"] = "/etc/mtab"
 opts["places"] = 1
 
 ##  Filesystems to ignore.
-opts["skip_list"] = ["/dev/pts", "/proc"]
+opts["skip_list"] = ["/dev/pts", "/proc", "/dev", "/proc/usb", "/sys"]
 
 ##  Use smart formatting of numbers.
 opts["smart"] = 1
