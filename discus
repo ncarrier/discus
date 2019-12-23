@@ -243,9 +243,9 @@ class Disk:
 
 ##  Print version.
 def version():
-	print "Discus version %s by Stormy Henderson (stormy@futuresouth.com)." % \
+	print "Discus version %s by Stormy Henderson (stormy@raincrazy.com)." % \
 		VERSION
-	print "Home page: http://www.futuresouth.com/~stormy/discus.shtml"
+	print "Home page: http://www.raincrazy.com/software/discus/"
 	raise SystemExit
 
 
