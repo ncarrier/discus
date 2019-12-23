@@ -10,7 +10,7 @@
 ##  commas.  String values must be quoted.
 
 ##  Labels to display next to numbers.  Thanks to Frank Elsner.
-opts["akabytes"] = ["KB", "meg", "gig", "TB"]
+opts["akabytes"] = ["KB", "MB", "GB", "TB", "PB", "EB"]
 opts["color"] = 1
 opts["divisor"] = 1
 opts["graph"] = 1
