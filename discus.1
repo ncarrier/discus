@@ -1,0 +1,66 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" DISCUS
+.\" 1
+.\" other parameters are allowed: see man(7), man(1)
+.TH DISCUS 1 "September 12, 2000"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+discus \- print a report of disk space usage
+.SH SYNOPSIS
+.B discus
+.RI [ options ]
+.br
+.SH DESCRIPTION
+\fBdiscus\fP aims to make df(1) prettier. Features include color, bar graphs,
+and smart formatting of numbers (automatically choosing the most suitable
+size from kilobytes, megabytes, gigabytes, or terabytes). Or choose your
+own size, along with specifying the number of decimal places you'd like to
+see. 
+
+Updates may be found at the Discus home page:
+.br
+http://www.futuresouth.com/~stormy/discus.shtml
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.TP
+.B \-c
+Disable color.
+.TP
+.B \-d
+Display device names instead of graphs.
+.TP
+.B \-p
+Number of digits to right of decimal place.
+.TP
+.B \-s
+Do not use smart formatting.
+.TP
+.B \-t, \-g, \-m, \-k
+Display sizes in terabytes, gigabytes, megabytes, or kilobytes, respectively. 
+Assumes -s.
+.TP
+.B \-v, \-\-version
+Show version of program.
+.SH FILES
+.BR /etc/discusrc,
+.BR $HOME/.discusrc
+.SH SEE ALSO
+.BR df (1),
+.BR pydf (1).
+.br
+.SH AUTHOR
+This manual page was written by Stormy Henderson <stormy@futuresouth.com>,
+for the Debian GNU/Linux system (but may be used by others).

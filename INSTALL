@@ -1,0 +1,20 @@
+
+Discus requires that the following software be installed.
+
+  o  Python.  I use 1.5.2.  Let me know if your version works.
+  o  Either the Python statvfs module (included by default in Debian) or the
+       external stat program.  Stat 2.2 works for me.  The version currently
+       included in the FreeBSD port (stat 1.3) does not.
+
+
+To install Discus without the benefit of a Debian package (available at
+http://www.futuresouth.com/~stormy/discus.shtml), type something like
+the following as root:
+
+cp discus /usr/local/bin
+chmod a+rx /usr/local/bin/discus
+cp discusrc /etc
+chmod a+r /etc/discusrc
+gzip -9 discus.1
+cp discus.1.gz /usr/local/man/man1
+chmod a+r /usr/local/man/man1/discus.1.gz

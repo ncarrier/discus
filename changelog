@@ -1,0 +1,34 @@
+VERSION 0.2.9 ----- September 15th, 2000
+
+  o  Fixed a color bug (thanks to Aaron Marasco).
+  o  Added mention of the configuration files in the README.
+
+
+VERSION 0.2.8 ----- September 15th, 2000
+
+  o  Colors may be altered in the configuration file.
+
+
+VERSION 0.2.7 ----- September 13th, 2000
+
+  o  May define your own graph characters in config file.
+  o  Fixed bug with reserved space that caused falsely inflated disk space
+       usage to be reported.
+
+
+VERSION 0.2.4 ----- September 13th, 2000
+
+  o  Added /etc/discusrc and $HOME/.discusrc configuration files.
+
+  o  Will fall back to using the external stat program if the statvfs
+       module is unavailable.
+
+  o  May use shell commands to obtain mounts information.  An example is
+      provided in the config file using /bin/mount with awk.
+
+  o  May specify your own labels for KB/MB/GB/TB in config file.
+
+
+VERSION 0.2.2 ----- September 12th, 2000
+
+  o  First public release.
