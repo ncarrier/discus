@@ -28,7 +28,7 @@
 ##  Define version number and create options object with internal settings.
 
 VERSION = "0.2.9"
-opts = {"placing": 0, "vfsing": 1}
+opts = {"placing": 0, "vfsing": 1, "reserved": 0}
 
 
 ##  Import modules used.
@@ -156,7 +156,7 @@ class Disk:
 
 	def percentage(self):
 		try:
-			percent = (1.0 - (1.0 * self.free_root / self.total)) * 100
+			percent = (1.0 - (1.0 * self.free / self.total)) * 100
 		except ZeroDivisionError:
 			percent = 0.0
 		
@@ -209,8 +209,14 @@ class Disk:
 			stats = os.statvfs(mount)
 			blocksize = int(stats[F_FRSIZE])
 			self.total = int(stats[F_BLOCKS]) * (blocksize / 1024.0)
-			self.free_root = int(stats[F_BFREE]) * (blocksize / 1024.0)
-			self.free = int(stats[F_BAVAIL]) * (blocksize / 1024.0)
+			# if we have to take care of reserved space for root, then use
+			# available blocks (but keep counting free space with all free blocks)
+			if opts["reserved"]:
+				self.free = int(stats[F_BAVAIL]) * (blocksize / 1024.0)
+				self.used = self.total - int(stats[F_BFREE]) * (blocksize / 1024.0)
+			else:
+				self.free = int(stats[F_BFREE]) * (blocksize / 1024.0)
+				self.used = self.total - int(stats[F_BFREE]) * (blocksize / 1024.0)
 		else:
 
 			##  External stat program.
@@ -223,10 +229,12 @@ class Disk:
 			stats = string.split(stats)
 			blocksize = int(stats[8])
 			self.total = int(stats[5]) * (blocksize / 1024.0)
-			self.free_root = int(stats[6]) * (blocksize / 1024.0)
-			self.free = int(stats[7]) * (blocksize / 1024.0)
-
-		self.used = self.total - self.free_root
+			if opts["reserved"]:
+				self.free = int(stats[7]) * (blocksize / 1024.0)
+				self.used = self.total - int(stats[7]) * (blocksize / 1024.0)
+			else:
+				self.free = int(stats[6]) * (blocksize / 1024.0)
+				self.used = self.total - int(stats[7]) * (blocksize / 1024.0)
 
 
 	##  Don't let long names mess up the display: shorten them
@@ -266,6 +274,7 @@ Options are:
                     assumes -s
  -d              show device instead of graph
  -c              disable color
+ -r              count reserved space as used
 """ % VERSION
 
 	else:
@@ -282,7 +291,7 @@ def parse_options():
 	##  Read the command line options provided by the user.
 
 	try:
-		options, args = getopt.getopt(sys.argv[1:], "p:tgmksdcvh",
+		options, args = getopt.getopt(sys.argv[1:], "p:tgmksdcrvh",
 			["help", "version"])
 	except:
 		help()
@@ -356,6 +365,9 @@ def parse_options():
 
 		if option in ["-h", "--help"]:
 			help()
+
+		if option == "-r":
+			opts["reserved"] = 1
 	
 
 
@@ -429,7 +441,7 @@ def format_header():
 		mount,
 		"Total",
 		"Used",
-		"Free",
+		"Avail",
 		"Prcnt",
 		graph
 	) + color("clear")
