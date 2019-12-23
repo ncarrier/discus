@@ -226,7 +226,7 @@ class Disk:
 			except:
 				help("Discus requires either the Python statvfs module or the external stat program.")
 
-			stats = string.split(stats)
+			stats = str.split(stats)
 			blocksize = int(stats[8])
 			self.total = int(stats[5]) * (blocksize / 1024.0)
 			if opts["reserved"]:
@@ -384,7 +384,7 @@ def read_mounts():
 
 	if mtab[0] == "!":
 		mtab = subprocess.getoutput(mtab[1:])
-		mtab = string.split(mtab, "\n")
+		mtab = str.split(mtab, "\n")
 	else:
 		fp = open(opts["mtab"])
 		mtab = fp.readlines()
@@ -392,7 +392,7 @@ def read_mounts():
 
 	##  Extract the mounted filesystems from the read file.
 	for entry in mtab:
-		entry = string.split(entry)
+		entry = str.split(entry)
 		device = entry[0]
 		mount = entry[1]
 
