@@ -27,7 +27,7 @@
 
 ##  Define version number and create options object with internal settings.
 
-VERSION = "0.2.9"
+VERSION = "0.3.0"
 opts = {"placing": 0, "vfsing": 1, "reserved": 0}
 
 

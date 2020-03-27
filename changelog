@@ -1,3 +1,8 @@
+VERSION 0.3.0 ----- March 27th, 2020
+
+  o  Python 3 compatibility.
+
+
 VERSION 0.2.9 ----- September 15th, 2000
 
   o  Fixed a color bug (thanks to Aaron Marasco).
