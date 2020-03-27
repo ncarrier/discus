@@ -23,6 +23,7 @@ import getopt
 import os
 import sys
 import re
+import unittest
 try:
     from statvfs import *
     statvfs = True
@@ -341,13 +342,10 @@ def read_mounts():
 
         # Sandro Tosi - to fix Debian bug 291276, convert escaped octal values
         # from /etc/mtab (or /proc/mounts) to real characters
-        mount = mount.encode('utf-8')
-        for octc in re.findall(br'\\(\d{3})', mount):
+        for octc in re.findall(r'\\(\d{3})', mount):
             mount = mount.replace(r'\%s' % octc, chr(int(octc, 8)))
-        mount = mount.decode('utf8')
 
         # Skip entries we aren't interested in.
-
         if mount in opts["skip_list"]:
             continue
 
