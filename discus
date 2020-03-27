@@ -26,14 +26,15 @@ import sys
 import re
 try:
     from statvfs import *
+    statvfs = True
 except ImportError:
-    opts["vfsing"] = 0
+    statvfs = False
 
+opts = {"placing": True, "vfsing": statvfs, "reserved": True}
 if "statvfs" not in dir(os):
-    opts["vfsing"] = 0
+    opts["vfsing"] = False
 
 VERSION = "0.3.0"
-opts = {"placing": 0, "vfsing": 1, "reserved": 0}
 
 
 class Disk:
@@ -283,7 +284,7 @@ def parse_options():
 
         # Display X decimal places.
         if option == "-p":
-            opts["placing"] = 1
+            opts["placing"] = True
             try:
                 opts["places"] = int(value)
             except ValueError:
