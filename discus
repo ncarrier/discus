@@ -23,17 +23,22 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307
 # USA.
 
-VERSION = "0.3.0"
-opts = {"placing": 0, "vfsing": 1, "reserved": 0}
-
-import subprocess, getopt, os, string, sys, re
+import subprocess
+import getopt
+import os
+import string
+import sys
+import re
 try:
     from statvfs import *
 except ImportError:
     opts["vfsing"] = 0
 
-if not "statvfs" in dir(os):
+if "statvfs" not in dir(os):
     opts["vfsing"] = 0
+
+VERSION = "0.3.0"
+opts = {"placing": 0, "vfsing": 1, "reserved": 0}
 
 
 class Disk:
@@ -66,14 +71,14 @@ class Disk:
 
         # Format the result, and return it.
         return color("normal") + "%-11s %12s %12s %12s   %5.1f%%   %s" % \
-        (
-            mount,
-            total,
-            used,
-            free,
-            percent,
-            graph
-        ) + color("clear")
+            (
+                mount,
+                total,
+                used,
+                free,
+                percent,
+                graph
+            ) + color("clear")
 
     def format(self, size):
         """Format the size for human use."""
@@ -108,8 +113,8 @@ class Disk:
             size = size / 1024.0
             count = count + 1
 
-        # Display a proportionate number of decimal places to the number of main
-        # digits.
+        # Display a proportionate number of decimal places to the number of
+        # main digits.
         if not opts["placing"]:
             if count < 2:
                 fudge = count
@@ -166,10 +171,10 @@ class Disk:
 
         result = result + color("normal")
         return "[%s%s]" % \
-        (
-            result,
-            graph_fill * percent
-        )
+            (
+                result,
+                graph_fill * percent
+            )
 
     def getstats(self, mount):
         """Gather statistics about specified filesystem."""
@@ -193,9 +198,9 @@ class Disk:
             # External stat program.
             try:
                 stats = subprocess.getoutput(opts["stat_prog"] + " " + mount)
-            except:
+            except Exception:
                 help("Discus requires either the Python statvfs module or the "
-                "external stat program.")
+                     "external stat program.")
 
             stats = str.split(stats)
             blocksize = int(stats[8])
@@ -216,14 +221,16 @@ class Disk:
 
         return text
 
+
 def version():
     """Print version."""
-    print("Discus version %s by Stormy Henderson (stormy@raincrazy.com)." % \
-        VERSION)
+    print("Discus version %s by Stormy Henderson (stormy@raincrazy.com)." %
+          VERSION)
     print("Home page: http://www.raincrazy.com/software/discus/")
     raise SystemExit
 
-def help(text = ""):
+
+def help(text=""):
     """Print a help file."""
     # Only print the general help if no specific message is provided.
     if text == "":
@@ -245,12 +252,13 @@ Options are:
 
     raise SystemExit
 
+
 def parse_options():
     """Read the user's options and integrate them with the defaults."""
     try:
         options, args = getopt.getopt(sys.argv[1:], "p:tgmksdcrvh",
-            ["help", "version"])
-    except:
+                                      ["help", "version"])
+    except Exception:
         help()
 
     for option, value in options:
@@ -284,10 +292,10 @@ def parse_options():
             try:
                 opts["places"] = int(value)
             except ValueError:
-                help("The -p option requires a number from 0 to 9 as argument.")
+                help("The -p option requires a number from 0 to 9.")
 
             if opts["places"] < 0 or opts["places"] > 9:
-                help("The -p option requires a number from 0 to 9 as argument.")
+                help("The -p option requires a number from 0 to 9.")
 
         # Disable smart display.
         if option == "-s":
@@ -353,6 +361,7 @@ def read_mounts():
 
     return devices, mounts
 
+
 def color(code):
     """Function that return color codes if color is enabled."""
     if opts["color"]:
@@ -372,14 +381,15 @@ def format_header():
         graph = "Mount"
 
     return color("header") + "%-16s%-14s%-13s%-11s%-10s%s" % \
-    (
-        mount,
-        "Total",
-        "Used",
-        "Avail",
-        "Prcnt",
-        graph
-    ) + color("clear")
+        (
+            mount,
+            "Total",
+            "Used",
+            "Avail",
+            "Prcnt",
+            graph
+        ) + color("clear")
+
 
 def main():
     """Define main program."""
