@@ -32,7 +32,8 @@ opts["skip_list"] = ["/dev/pts", "/proc", "/dev", "/proc/usb", "/sys"]
 opts["smart"] = 1
 
 ##  Location of stat program in lieu of Python's statvfs module.
-opts["stat_prog"] = "stat -ft"
+# Deprecated starting from version 0.3.0
+#opts["stat_prog"] = "stat -ft"
 
 ##  These colors should work on VT100-type displays.  Change them if you use
 ##  something else.

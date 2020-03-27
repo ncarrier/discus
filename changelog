@@ -1,6 +1,7 @@
 VERSION 0.3.0 ----- March 27th, 2020
 
   o  Python 3 compatibility.
+  o  dropped support for the stat_prog configuration option
 
 
 VERSION 0.2.9 ----- September 15th, 2000

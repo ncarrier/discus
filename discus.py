@@ -24,15 +24,8 @@ import os
 import sys
 import re
 import unittest
-try:
-    from statvfs import *
-    statvfs = True
-except ImportError:
-    statvfs = False
 
-opts = {"placing": True, "vfsing": statvfs, "reserved": True}
-if "statvfs" not in dir(os):
-    opts["vfsing"] = False
+opts = {"placing": True, "reserved": True}
 
 VERSION = "0.3.0"
 
@@ -174,39 +167,20 @@ class Disk:
 
     def getstats(self, mount):
         """Gather statistics about specified filesystem."""
-        # Am I using the statvfs module or the stat program?
-        if opts["vfsing"]:
-            stats = os.statvfs(mount)
-            blocksize = int(stats[F_FRSIZE])
-            self.total = int(stats[F_BLOCKS]) * (blocksize / 1024.0)
-            # if we have to take care of reserved space for root, then use
-            # available blocks (but keep counting free space with all free
-            # blocks)
-            if opts["reserved"]:
-                self.free = int(stats[F_BAVAIL]) * (blocksize / 1024.0)
-                self.used = (self.total - int(stats[F_BFREE]) *
-                             (blocksize / 1024.0))
-            else:
-                self.free = int(stats[F_BFREE]) * (blocksize / 1024.0)
-                self.used = (self.total - int(stats[F_BFREE]) *
-                             (blocksize / 1024.0))
+        stats = os.statvfs(mount)
+        blocksize = int(stats.f_frsize)
+        self.total = int(stats.f_blocks) * (blocksize / 1024.0)
+        # if we have to take care of reserved space for root, then use
+        # available blocks (but keep counting free space with all free
+        # blocks)
+        if opts["reserved"]:
+            self.free = int(stats.f_bavail) * (blocksize / 1024.0)
+            self.used = (self.total - int(stats.f_bfree) *
+                         (blocksize / 1024.0))
         else:
-            # External stat program.
-            try:
-                stats = subprocess.getoutput(opts["stat_prog"] + " " + mount)
-            except Exception:
-                help("Discus requires either the Python statvfs module or the "
-                     "external stat program.")
-
-            stats = str.split(stats)
-            blocksize = int(stats[8])
-            self.total = int(stats[5]) * (blocksize / 1024.0)
-            if opts["reserved"]:
-                self.free = int(stats[7]) * (blocksize / 1024.0)
-                self.used = self.total - int(stats[7]) * (blocksize / 1024.0)
-            else:
-                self.free = int(stats[6]) * (blocksize / 1024.0)
-                self.used = self.total - int(stats[7]) * (blocksize / 1024.0)
+            self.free = int(stats.f_bfree) * (blocksize / 1024.0)
+            self.used = (self.total - int(stats.f_bfree) *
+                         (blocksize / 1024.0))
 
     def trim(self, text):
         """Don't let long names mess up the display: shorten them."""
@@ -430,5 +404,9 @@ if __name__ == "__main__":
 
     # Add internal color setting.
     opts["color_clear"] = normal
+
+    if "stat_prog" in opts:
+        print("support for stat_prog option has been removed in 0.3.0",
+              file=sys.stderr)
 
     main()
