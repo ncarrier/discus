@@ -56,7 +56,7 @@ class Disk:
         self.device = device
         self.mount = mount
 
-    
+
     # Generate a report, and return it as text.
 
     def report(self):
@@ -74,9 +74,9 @@ class Disk:
         else:
             graph = self.trim(self.mount)
             mount = self.trim(self.device)
-        
+
         # Format the result, and return it.
-            
+
         return color("normal") + "%-11s %12s %12s %12s   %5.1f%%   %s" % \
         (
             mount,
@@ -86,7 +86,7 @@ class Disk:
             percent,
             graph
         ) + color("clear")
-        
+
 
     # Format the size for human use.
 
@@ -107,7 +107,7 @@ class Disk:
         else:
             result = "%%0.%df %%s" % places
             result = result % (size, labels[divisor])
-                
+
         return result
 
 
@@ -138,9 +138,9 @@ class Disk:
         else:
             # User specified how many decimal places were wanted.
             fudge = opts["places"]
-        
+
         return size, count, fudge
-        
+
 
     # We're not using smart display, so figure things up on the specified
     # KB/MB/GB/TB basis.
@@ -151,7 +151,7 @@ class Disk:
 
         return size, divisor, opts["places"]
 
-        
+
     # Compute the percentage of space used.
 
     def percentage(self):
@@ -159,9 +159,9 @@ class Disk:
             percent = (1.0 - (1.0 * self.free / self.total)) * 100
         except ZeroDivisionError:
             percent = 0.0
-        
+
         return percent
-                    
+
 
     # Format a percentage as a bar graph.
 
@@ -173,7 +173,7 @@ class Disk:
         percent = round(percent)
         percent = int(percent)
         percent = 10 - percent
-        
+
         # Now generate the string, using the characters in the config file.
 
         result = color("safe")
@@ -190,19 +190,19 @@ class Disk:
                 result = result + color("danger") + graph_char
             elif counter == 9:
                 result = result + graph_char
-            
+
         result = result + color("normal")
         return "[%s%s]" % \
         (
             result,
             graph_fill * percent
         )
-        
-    
+
+
     # Gather statistics about specified filesystem.
 
     def getstats(self, mount):
-        
+
         # Am I using the statvfs module or the stat program?
 
         if opts["vfsing"]:
@@ -238,14 +238,14 @@ class Disk:
 
 
     # Don't let long names mess up the display: shorten them
-    
+
     def trim(self, text):
         where = len(text)
         where = where - 10
         if where > 0:
             text = "+" + text[where:]
 
-        return text            
+        return text
 
 
 
@@ -295,7 +295,7 @@ def parse_options():
             ["help", "version"])
     except:
         help()
-    
+
     # Check for each option.
 
     for option, value in options:
@@ -306,22 +306,22 @@ def parse_options():
             opts["divisor"] = 3
             opts["smart"] = 0
             opts["places"] = 3
-            
+
         # Display gigabytes.
 
         if option == "-g":
             opts["divisor"] = 2
             opts["smart"] = 0
             opts["places"] = 2
-        
+
         # Display megabytes.
 
         if option == "-m":
             opts["divisor"] = 1
             opts["smart"] = 0
             opts["places"] = 1
-            
-        
+
+
         # Display kilobytes.
 
         if option == "-k":
@@ -337,10 +337,10 @@ def parse_options():
                 opts["places"] = int(value)
             except ValueError:
                 help("The -p option requires a number from 0 to 9 as argument.")
-            
+
             if opts["places"] < 0 or opts["places"] > 9:
                 help("The -p option requires a number from 0 to 9 as argument.")
-            
+
         # Disable smart display.
 
         if option == "-s":
@@ -352,15 +352,15 @@ def parse_options():
             opts["graph"] = 0
 
         # Turn off color.
-        
+
         if option == "-c":
             opts["color"] = 0
 
         # Display version.
-        
+
         if option in ["-v", "--version"]:
             version()
-        
+
         # Display help.
 
         if option in ["-h", "--help"]:
@@ -368,7 +368,7 @@ def parse_options():
 
         if option == "-r":
             opts["reserved"] = 1
-    
+
 
 
 # Read the mounts file.
@@ -402,17 +402,17 @@ def read_mounts():
         for octc in re.findall(r'\\(\d{3})', mount):
             mount = mount.replace(r'\%s' % octc, chr(int(octc, 8)))
         mount = mount.decode('utf8')
-        
+
         # Skip entries we aren't interested in.
 
         if mount in opts["skip_list"]:
             continue
-            
+
         devices.append(device)
         mounts.append(mount)
 
     return devices, mounts
-    
+
 
 
 # Function that return color codes if color is enabled.
@@ -435,7 +435,7 @@ def format_header():
     else:
         mount = "Device"
         graph = "Mount"
-        
+
     return color("header") + "%-16s%-14s%-13s%-11s%-10s%s" % \
     (
         mount,
@@ -455,11 +455,11 @@ def main():
     # Read the options specified by the user.
 
     parse_options()
-    
+
     # Read the mounts file.
 
-    devices, mounts = read_mounts()    
-    
+    devices, mounts = read_mounts()
+
     # Output a header line.
 
     print(format_header())
@@ -469,13 +469,13 @@ def main():
     for count in range(0, len(devices)):
         disk = Disk(devices[count], mounts[count])
         print(disk.report())
-    
 
 
-# Run the main program.
+
+# Run the main program. 
 
 if __name__ == "__main__":
-    
+
     # Before starting, we need to load the configuration files which
     # contain global objects.  First the global /etc file, then the user's
     # file, if exists.
