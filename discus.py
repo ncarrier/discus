@@ -356,6 +356,22 @@ def read_mounts():
 
     return devices, mounts
 
+class ReadMountsTests(unittest.TestCase):
+    def test_simple_mtab(self):
+        opts["mtab"] = "tests/mtab.oneline"
+        opts["skip_list"] = []
+        devices, mounts = read_mounts()
+        self.assertEqual(len(devices), 1, "one device should be detected")
+        self.assertEqual(devices[0], "/dev/sda2")
+        self.assertEqual(len(mounts), 1, "one mount point should be detected")
+        self.assertEqual(mounts[0], "/")
+
+    def test_bug_291276(self):
+        opts["mtab"] = "tests/mtab.291276"
+        opts["skip_list"] = []
+        _, mounts = read_mounts()
+        self.assertEqual(len(mounts), 1, "one mount point should be detected")
+        self.assertEqual(mounts[0], "/media/ACER UFD")
 
 def color(code):
     """Function that return color codes if color is enabled."""
