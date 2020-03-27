@@ -21,7 +21,6 @@
 import subprocess
 import getopt
 import os
-import string
 import sys
 import re
 try:
