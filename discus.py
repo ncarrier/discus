@@ -194,9 +194,9 @@ class Disk:
 
 def version():
     """Print version."""
-    print("Discus version %s by Stormy Henderson (stormy@raincrazy.com)." %
-          VERSION)
-    print("Home page: http://www.raincrazy.com/software/discus/")
+    print(f"Discus version {VERSION} by Nicolas Carrier "
+          "(carrier.nicolas0@gmail.com).")
+    print("Home page: https://github.com/ncarrier/discus")
     raise SystemExit
 
 
