@@ -328,6 +328,7 @@ def read_mounts():
 
     return devices, mounts
 
+
 class ReadMountsTests(unittest.TestCase):
     def test_simple_mtab(self):
         opts["mtab"] = "tests/mtab.oneline"
@@ -344,6 +345,7 @@ class ReadMountsTests(unittest.TestCase):
         _, mounts = read_mounts()
         self.assertEqual(len(mounts), 1, "one mount point should be detected")
         self.assertEqual(mounts[0], "/media/ACER UFD")
+
 
 def color(code):
     """Function that return color codes if color is enabled."""
