@@ -373,7 +373,9 @@ def read_mounts():
 
 
 class ReadMountsTests(unittest.TestCase):
+    """Tests for the read_mounts function."""
     def test_simple_mtab(self):
+        """Test with a simple mtabe consisting of only one line."""
         opts["mtab"] = "tests/mtab.oneline"
         opts["skip_list"] = []
         devices, mounts = read_mounts()
@@ -383,6 +385,7 @@ class ReadMountsTests(unittest.TestCase):
         self.assertEqual(mounts[0], "/")
 
     def test_bug_291276(self):
+        """Test to reproduce the debian bug 291276."""
         opts["mtab"] = "tests/mtab.291276"
         opts["skip_list"] = []
         _, mounts = read_mounts()
