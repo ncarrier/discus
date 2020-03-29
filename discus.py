@@ -24,6 +24,7 @@ import os
 import sys
 import re
 import unittest
+from collections import namedtuple
 
 opts = {"placing": True, "reserved": True}
 
@@ -33,6 +34,59 @@ VERSION = "0.4.0"
 EX_OK = 0
 EX_USAGE = 64
 EX_CONFIG = 78
+
+
+class StatsFactory:
+    """Factory class to get statistics about a mount point."""
+    def __init__(self, reserved):
+        """Constructor, initialize private fields."""
+        self.__reserved = reserved
+        self.__stats_class = namedtuple('Stats', ['total', 'free', 'used'])
+
+    def getStats(self, mount):
+        """Gather statistics about specified filesystem."""
+        stats = os.statvfs(mount)
+        total = stats.f_blocks * stats.f_frsize
+        # if we have to take care of reserved space for root, then use
+        # available blocks (but keep counting free space with all free blocks)
+        if self.__reserved:
+            free = stats.f_bavail * stats.f_frsize
+            used = total - stats.f_bfree * stats.f_frsize
+        else:
+            free = stats.f_bfree * stats.f_frsize
+            used = total - stats.f_bfree * stats.f_frsize
+
+        return self.__stats_class(total=total, free=free, used=used)
+
+
+class StatsFactoryTests(unittest.TestCase):
+    """Unit tests for the StatsFactory class"""
+    def test_getStatsReservedTrue(self):
+        """Normal use case with reserved == True."""
+        factory = StatsFactory(True)
+        s = factory.getStats("/")
+        self.assertNotEqual(s.total, 0, "a size of 0 for / is unlikely")
+        self.assertNotEqual(s.free, 0, "0 bytes free for / is unlikely")
+        self.assertNotEqual(s.used, 0, "0 bytes used for / is unlikely")
+
+    def test_getStatsReservedFalse(self):
+        """Normal use case with reserved == False."""
+        factory = StatsFactory(False)
+        s = factory.getStats("/")
+        self.assertNotEqual(s.total, 0, "a size of 0 for / is unlikely")
+        self.assertNotEqual(s.free, 0, "0 bytes free for / is unlikely")
+        self.assertNotEqual(s.used, 0, "0 bytes used for / is unlikely")
+        self.assertEqual(s.total, s.free + s.used, "total != free + used")
+
+    def test_getStatsFalse(self):
+        """Failure use case, non existent mount point."""
+        factory = StatsFactory(False)
+        raised = False
+        try:
+            s = factory.getStats("non existent mount point")
+        except Exception:
+            raised = True
+        self.assertTrue(raised)
 
 
 class Disk:
