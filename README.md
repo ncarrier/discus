@@ -63,11 +63,23 @@ chmod a+r /usr/local/man/man1/discus.1.gz
 
 ## Test
 
+### Unit tests
+
 Only a few unit tests exist at the time of writing, but one has to start
 somewhere :)
 
 ```
 python3 -m unittest discus.py -v
+```
+
+### Pre-commit tests
+
+The `tests/pre-commit.sh` script allows to perform tests prior of committing.
+You can run it directly or even better, install it as a git hook script by
+running:
+
+```
+ln -s ../../tests/pre-commit.sh .git/hooks/pre-commit
 ```
 
 ## Coding style
