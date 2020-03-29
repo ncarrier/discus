@@ -45,9 +45,9 @@ class Disk:
     def report(self):
         """Generate a report, and return it as text."""
         percent = self.percentage()
-        total = self.format(self.total)
-        used = self.format(self.used)
-        free = self.format(self.free)
+        total = self.__format(self.total)
+        used = self.__format(self.used)
+        free = self.__format(self.free)
 
         # Perform a swaparoo if the user wants the device names instead
         # of my pretty bar graph.
@@ -69,7 +69,7 @@ class Disk:
                 graph
             ) + color("clear")
 
-    def format(self, size):
+    def __format(self, size):
         """Format the size for human use."""
         labels = opts["akabytes"]
 
