@@ -30,9 +30,10 @@ opts = {"placing": True, "reserved": True}
 VERSION = "0.4.0"
 
 # values taken from sysexit.h
-EX_OK          = 0
-EX_USAGE       = 64
-EX_CONFIG      = 78
+EX_OK = 0
+EX_USAGE = 64
+EX_CONFIG = 78
+
 
 class Disk:
     """Contains everything needed to represent a disk textually."""
@@ -180,11 +181,11 @@ class Disk:
         if opts["reserved"]:
             self.__free = int(stats.f_bavail) * (blocksize / 1024.0)
             self.__used = (self.__total - int(stats.f_bfree) *
-                         (blocksize / 1024.0))
+                           (blocksize / 1024.0))
         else:
             self.__free = int(stats.f_bfree) * (blocksize / 1024.0)
             self.__used = (self.__total - int(stats.f_bfree) *
-                         (blocksize / 1024.0))
+                           (blocksize / 1024.0))
 
     def __trim(self, text):
         """Don't let long names mess up the display: shorten them."""
@@ -225,6 +226,7 @@ Options are:
         print(text)
 
     sys.exit(exit_status)
+
 
 def parse_options():
     """Read the user's options and integrate them with the defaults."""
