@@ -42,25 +42,25 @@ class Disk:
         Collect the stats when the object is created, and store them for later,
         when a report is requested.
         """
-        self.getstats(mount)
-        self.device = device
-        self.mount = mount
+        self.__getstats(mount)
+        self.__device = device
+        self.__mount = mount
 
     def report(self):
         """Generate a report, and return it as text."""
-        percent = self.percentage()
-        total = self.__format(self.total)
-        used = self.__format(self.used)
-        free = self.__format(self.free)
+        percent = self.__percentage()
+        total = self.__format(self.__total)
+        used = self.__format(self.__used)
+        free = self.__format(self.__free)
 
         # Perform a swaparoo if the user wants the device names instead
         # of my pretty bar graph.
         if opts["graph"]:
-            graph = self.graph(percent)
-            mount = self.trim(self.mount)
+            graph = self.__graph(percent)
+            mount = self.__trim(self.__mount)
         else:
-            graph = self.trim(self.mount)
-            mount = self.trim(self.device)
+            graph = self.__trim(self.__mount)
+            mount = self.__trim(self.__device)
 
         # Format the result, and return it.
         return color("normal") + "%-11s %12s %12s %12s   %5.1f%%   %s" % \
@@ -79,9 +79,9 @@ class Disk:
 
         # Is smart display enabled?
         if opts["smart"]:
-            size, divisor, places = self.smart_format(size)
+            size, divisor, places = self.__smart_format(size)
         else:
-            size, divisor, places = self.manual_format(size)
+            size, divisor, places = self.__manual_format(size)
 
         # And now actually format the result.
         if size == 0:
@@ -92,7 +92,7 @@ class Disk:
 
         return result
 
-    def smart_format(self, size):
+    def __smart_format(self, size):
         """
         Use smart formatting, which increases the divisor until size is 3 or
         less digits in size.
@@ -119,7 +119,7 @@ class Disk:
 
         return size, count, fudge
 
-    def manual_format(self, size):
+    def __manual_format(self, size):
         """
         We're not using smart display, so figure things up on the specified
         KB/MB/GB/TB basis.
@@ -129,16 +129,16 @@ class Disk:
 
         return size, divisor, opts["places"]
 
-    def percentage(self):
+    def __percentage(self):
         """Compute the percentage of space used."""
         try:
-            percent = (1.0 - (1.0 * self.free / self.total)) * 100
+            percent = (1.0 - (1.0 * self.__free / self.__total)) * 100
         except ZeroDivisionError:
             percent = 0.0
 
         return percent
 
-    def graph(self, percent):
+    def __graph(self, percent):
         """Format a percentage as a bar graph."""
         # How many stars to place?
         percent = percent / 10
@@ -169,24 +169,24 @@ class Disk:
                 graph_fill * percent
             )
 
-    def getstats(self, mount):
+    def __getstats(self, mount):
         """Gather statistics about specified filesystem."""
         stats = os.statvfs(mount)
         blocksize = int(stats.f_frsize)
-        self.total = int(stats.f_blocks) * (blocksize / 1024.0)
+        self.__total = int(stats.f_blocks) * (blocksize / 1024.0)
         # if we have to take care of reserved space for root, then use
         # available blocks (but keep counting free space with all free
         # blocks)
         if opts["reserved"]:
-            self.free = int(stats.f_bavail) * (blocksize / 1024.0)
-            self.used = (self.total - int(stats.f_bfree) *
+            self.__free = int(stats.f_bavail) * (blocksize / 1024.0)
+            self.__used = (self.__total - int(stats.f_bfree) *
                          (blocksize / 1024.0))
         else:
-            self.free = int(stats.f_bfree) * (blocksize / 1024.0)
-            self.used = (self.total - int(stats.f_bfree) *
+            self.__free = int(stats.f_bfree) * (blocksize / 1024.0)
+            self.__used = (self.__total - int(stats.f_bfree) *
                          (blocksize / 1024.0))
 
-    def trim(self, text):
+    def __trim(self, text):
         """Don't let long names mess up the display: shorten them."""
         where = len(text)
         where = where - 10
