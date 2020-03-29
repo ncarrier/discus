@@ -92,21 +92,21 @@ class StatsFactoryTests(unittest.TestCase):
 class Disk:
     """Contains everything needed to represent a disk textually."""
 
-    def __init__(self, device, mount):
+    def __init__(self, device, mount, stats_factory):
         """
         Collect the stats when the object is created, and store them for later,
         when a report is requested.
         """
-        self.__getstats(mount)
+        self.__stats = stats_factory.getStats(mount)
         self.__device = device
         self.__mount = mount
 
     def report(self):
         """Generate a report, and return it as text."""
         percent = self.__percentage()
-        total = self.__format(self.__total)
-        used = self.__format(self.__used)
-        free = self.__format(self.__free)
+        total = self.__format(self.__stats.total / 1024)
+        used = self.__format(self.__stats.used / 1024)
+        free = self.__format(self.__stats.free / 1024)
 
         # Perform a swaparoo if the user wants the device names instead
         # of my pretty bar graph.
@@ -187,11 +187,11 @@ class Disk:
     def __percentage(self):
         """Compute the percentage of space used."""
         try:
-            percent = (1.0 - (1.0 * self.__free / self.__total)) * 100
+            ratio = 1.0 - self.__stats.free / self.__stats.total
         except ZeroDivisionError:
-            percent = 0.0
+            ratio = 0.0
 
-        return percent
+        return 100 * ratio
 
     def __graph(self, percent):
         """Format a percentage as a bar graph."""
@@ -223,23 +223,6 @@ class Disk:
                 result,
                 graph_fill * percent
             )
-
-    def __getstats(self, mount):
-        """Gather statistics about specified filesystem."""
-        stats = os.statvfs(mount)
-        blocksize = int(stats.f_frsize)
-        self.__total = int(stats.f_blocks) * (blocksize / 1024.0)
-        # if we have to take care of reserved space for root, then use
-        # available blocks (but keep counting free space with all free
-        # blocks)
-        if opts["reserved"]:
-            self.__free = int(stats.f_bavail) * (blocksize / 1024.0)
-            self.__used = (self.__total - int(stats.f_bfree) *
-                           (blocksize / 1024.0))
-        else:
-            self.__free = int(stats.f_bfree) * (blocksize / 1024.0)
-            self.__used = (self.__total - int(stats.f_bfree) *
-                           (blocksize / 1024.0))
 
     def __trim(self, text):
         """Don't let long names mess up the display: shorten them."""
@@ -441,10 +424,11 @@ def main():
     parse_options()
     devices, mounts = read_mounts()
     print(format_header())
+    stats_factory = StatsFactory(opts["reserved"])
 
     # Create a disk object for each mount, and print a report.
     for count in range(0, len(devices)):
-        disk = Disk(devices[count], mounts[count])
+        disk = Disk(devices[count], mounts[count], stats_factory)
         print(disk.report())
 
 
