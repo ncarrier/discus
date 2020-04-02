@@ -268,8 +268,8 @@ Options are:
 def parse_options():
     """Read the user's options and integrate them with the defaults."""
     try:
-        options, args = getopt.getopt(sys.argv[1:], "p:tgmksdcrvh",
-                                      ["help", "version"])
+        options = getopt.getopt(sys.argv[1:], "p:tgmksdcrvh",
+                                ["help", "version"])
     except Exception:
         sys.exit(EX_USAGE)
 
