@@ -83,7 +83,7 @@ class StatsFactoryTests(unittest.TestCase):
         factory = StatsFactory(False)
         raised = False
         try:
-            s = factory.getStats("non existent mount point")
+            factory.getStats("non existent mount point")
         except Exception:
             raised = True
         self.assertTrue(raised)
