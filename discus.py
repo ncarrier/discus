@@ -78,7 +78,7 @@ class StatsFactoryTests(unittest.TestCase):
         self.assertNotEqual(s.used, 0, "0 bytes used for / is unlikely")
         self.assertEqual(s.total, s.free + s.used, "total != free + used")
 
-    def test_getStatsFalse(self):
+    def test_getStatsFailure(self):
         """Failure use case, non existent mount point."""
         factory = StatsFactory(False)
         raised = False
