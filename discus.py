@@ -242,8 +242,8 @@ def version():
     sys.exit(0)
 
 
-def help(exit_status, text=""):
-    """Print a help file."""
+def usage(exit_status, text=""):
+    """Print the help of the tool."""
     # Only print the general help if no specific message is provided.
     if text == "":
         print("""Discus version %s, to display disk usage.
@@ -308,7 +308,7 @@ def parse_options():
                 fail = True
 
             if fail or opts["places"] < 0 or opts["places"] > 9:
-                help(EX_USAGE, "The -p option requires a number from 0 to 9.")
+                usage(EX_USAGE, "The -p option requires a number from 0 to 9.")
 
         # Disable smart display.
         if option == "-s":
@@ -328,7 +328,7 @@ def parse_options():
 
         # Display help.
         if option in ["-h", "--help"]:
-            help(EX_OK)
+            usage(EX_OK)
 
         if option == "-r":
             opts["reserved"] = 1
@@ -443,7 +443,7 @@ if __name__ == "__main__":
         exec(compile(open("/etc/discusrc", "rb").read(), "/etc/discusrc",
              'exec'))
     except IOError:
-        help(EX_CONFIG, "/etc/discusrc must exist and be readable.")
+        usage(EX_CONFIG, "/etc/discusrc must exist and be readable.")
 
     try:
         exec(compile(open(os.environ['HOME'] + "/.discusrc", "rb").read(),
