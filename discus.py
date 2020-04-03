@@ -89,6 +89,123 @@ class StatsFactoryTests(unittest.TestCase):
         self.assertTrue(raised)
 
 
+class SizeFormatter:
+    """
+    Class responsible of formatting sizes, smartly or not.
+    if opts["smart"] is false, divisor will be used to divide the size to the
+    corresponding unit, that is 0 -> KB, 1 -> MB... Supposing that the size is
+    fed in kilo bytes.
+    """
+    DEFAULT_AKABYTES = ["KB", "MB", "GB", "TB", "PB", "EB"]
+    # helper class for manipulating options
+    Options = namedtuple("Options", ["smart", "placing", "akabytes", "places",
+                                     "divisor"],
+                         defaults=(True, True, DEFAULT_AKABYTES, 1, 1))
+
+    def __init__(self, smart, placing, akabytes, places, divisor):
+        """Constructor, initialize private fields."""
+        self.__smart = smart
+        self.__placing = placing
+        self.__akabytes = akabytes.copy()
+        self.__places = places
+        self.__divisor = divisor
+        # Is smart display enabled?
+        self.__formatter = (self.__smart_format if self.__smart
+                            else self.__manual_format)
+
+    def format(self, size):
+        """
+        Format the size for human use.
+        size: size in kilobytes.
+        """
+        labels = self.__akabytes
+
+        size, divisor, places = self.__formatter(size)
+
+        # And now actually format the result.
+        if size == 0:
+            result = "%d %s" % (size, labels[divisor])
+        else:
+            result = "%%0.%df %%s" % places
+            result = result % (size, labels[divisor])
+
+        return result
+
+    def __smart_format(self, size):
+        """
+        Use smart formatting, which increases the divisor until size is 3 or
+        less digits in size.
+        """
+        # Keep reducing digits until there are 3 or less.
+        count = 0
+        while size > (0.9999999999 * pow(10, 3)):
+            # But don't let it get too small, either.
+            if (size / 1024.0) < 0.05:
+                break
+            size = size / 1024.0
+            count = count + 1
+
+        # Display a proportionate number of decimal places to the number of
+        # main digits.
+        if not self.__placing:
+            if count < 2:
+                fudge = count
+            else:
+                fudge = 2
+        else:
+            # User specified how many decimal places were wanted.
+            fudge = self.__places
+
+        return size, count, fudge
+
+    def __manual_format(self, size):
+        """
+        We're not using smart display, so figure things up on the specified
+        KB/MB/GB/TB basis.
+        """
+        divisor = self.__divisor
+        size = size / pow(1024.0, divisor)
+
+        return size, divisor, self.__places
+
+
+class SizeFormatterTests(unittest.TestCase):
+    """Unit tests for the SizeFormatter class"""
+
+    def test_manual_format(self):
+        """Format sizes in manual format mode."""
+        # kilo bytes
+        opts = SizeFormatter.Options(smart=False, divisor=0)
+        sf = SizeFormatter(*opts)
+        # TODO, this is not correct, if the converted size is exact, then there
+        # should be no .0 part, but to implement that, we have to manipulate
+        # sizes internally in bytes, not in kilo bytes
+        self.assertEqual(sf.format(124684), "124684.0 KB", "124684 in KB fail")
+        # mega bytes
+        opts = SizeFormatter.Options(smart=False, divisor=1)
+        sf = SizeFormatter(*opts)
+        self.assertEqual(sf.format(124684), "121.8 MB", "124684 in MB fail")
+        # giga bytes
+        opts = SizeFormatter.Options(smart=False, divisor=2)
+        sf = SizeFormatter(*opts)
+        self.assertEqual(sf.format(124684), "0.1 GB", "124684 in GB fail")
+        # tera bytes
+        opts = SizeFormatter.Options(smart=False, divisor=3)
+        sf = SizeFormatter(*opts)
+        self.assertEqual(sf.format(pow(1024, 3)), "1.0 TB", "1 TB in TB fail")
+        self.assertEqual(sf.format(0), "0 TB", "0 TB in TB fail")
+
+    def test_smart_format(self):
+        """Format sizes in smart format mode."""
+        opts = SizeFormatter.Options(smart=True)
+        sf = SizeFormatter(*opts)
+        self.assertEqual(sf.format(124684), "121.8 MB", "124684 fail")
+        self.assertEqual(sf.format(1024), "1.0 MB", "1024 fail")
+        self.assertEqual(sf.format(1), "1.0 KB", "1 fail")
+        self.assertEqual(sf.format(999), "999.0 KB", "999 fail")
+        self.assertEqual(sf.format(1000), "1.0 MB", "1000 fail")
+
+
 class Disk:
     """Contains everything needed to represent a disk textually."""
 
