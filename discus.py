@@ -209,7 +209,7 @@ class SizeFormatterTests(unittest.TestCase):
 class Disk:
     """Contains everything needed to represent a disk textually."""
 
-    def __init__(self, device, mount, stats_factory):
+    def __init__(self, device, mount, stats_factory, size_formatter):
         """
         Collect the stats when the object is created, and store them for later,
         when a report is requested.
@@ -217,6 +217,7 @@ class Disk:
         self.__stats = stats_factory.getStats(mount)
         self.__device = device
         self.__mount = mount
+        self.__size_formatter = size_formatter
 
     def report(self):
         """Generate a report, and return it as text."""
@@ -247,59 +248,7 @@ class Disk:
 
     def __format(self, size):
         """Format the size for human use."""
-        labels = opts["akabytes"]
-
-        # Is smart display enabled?
-        if opts["smart"]:
-            size, divisor, places = self.__smart_format(size)
-        else:
-            size, divisor, places = self.__manual_format(size)
-
-        # And now actually format the result.
-        if size == 0:
-            result = "%d %s" % (size, labels[divisor])
-        else:
-            result = "%%0.%df %%s" % places
-            result = result % (size, labels[divisor])
-
-        return result
-
-    def __smart_format(self, size):
-        """
-        Use smart formatting, which increases the divisor until size is 3 or
-        less digits in size.
-        """
-        # Keep reducing digits until there are 3 or less.
-        count = 0
-        while size > (0.9999999999 * pow(10, 3)):
-            # But don't let it get too small, either.
-            if (size / 1024.0) < 0.05:
-                break
-            size = size / 1024.0
-            count = count + 1
-
-        # Display a proportionate number of decimal places to the number of
-        # main digits.
-        if not opts["placing"]:
-            if count < 2:
-                fudge = count
-            else:
-                fudge = 2
-        else:
-            # User specified how many decimal places were wanted.
-            fudge = opts["places"]
-
-        return size, count, fudge
-
-    def __manual_format(self, size):
-        """
-        We're not using smart display, so figure things up on the specified
-        KB/MB/GB/TB basis.
-        """
-        divisor = opts["divisor"]
-        size = size / pow(1024.0, divisor)
-
-        return size, divisor, opts["places"]
+        return self.__size_formatter.format(size)
 
     def __percentage(self):
         """Compute the percentage of space used."""
@@ -545,10 +494,14 @@ def main():
     devices, mounts = read_mounts()
     print(format_header())
     stats_factory = StatsFactory(opts["reserved"])
+    size_formatter = SizeFormatter(opts["smart"], opts["placing"],
+                                   opts["akabytes"], opts["places"],
+                                   opts["divisor"])
 
     # Create a disk object for each mount, and print a report.
     for count in range(0, len(devices)):
-        disk = Disk(devices[count], mounts[count], stats_factory)
+        disk = Disk(devices[count], mounts[count], stats_factory,
+                    size_formatter)
         print(disk.report())
 
 
