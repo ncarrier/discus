@@ -433,11 +433,10 @@ def parse_options():
             opts["reserved"] = 1
 
 
-def read_mounts():
+def read_mounts(mtab, skip_list):
     """Read the mounts file."""
     mounts = []
     devices = []
-    mtab = opts["mtab"]
 
     # If the first letter of the mtab file begins with a !, it is a
     # shell command to be executed, and not a file to be read.  Idea
@@ -446,7 +445,7 @@ def read_mounts():
         mtab = subprocess.getoutput(mtab[1:])
         mtab = str.split(mtab, "\n")
     else:
-        fp = open(opts["mtab"])
+        fp = open(mtab)
         mtab = fp.readlines()
         fp.close()
 
@@ -462,7 +461,7 @@ def read_mounts():
             mount = mount.replace(r'\%s' % octc, chr(int(octc, 8)))
 
         # Skip entries we aren't interested in.
-        if mount in opts["skip_list"]:
+        if mount in skip_list:
             continue
 
         devices.append(device)
@@ -475,9 +474,7 @@ class ReadMountsTests(unittest.TestCase):
     """Tests for the read_mounts function."""
     def test_simple_mtab(self):
         """Test with a simple mtabe consisting of only one line."""
-        opts["mtab"] = "tests/mtab.oneline"
-        opts["skip_list"] = []
-        devices, mounts = read_mounts()
+        devices, mounts = read_mounts("tests/mtab.oneline", [])
         self.assertEqual(len(devices), 1, "one device should be detected")
         self.assertEqual(devices[0], "/dev/sda2")
         self.assertEqual(len(mounts), 1, "one mount point should be detected")
@@ -485,9 +482,7 @@ class ReadMountsTests(unittest.TestCase):
 
     def test_bug_291276(self):
         """Test to reproduce the debian bug 291276."""
-        opts["mtab"] = "tests/mtab.291276"
-        opts["skip_list"] = []
-        _, mounts = read_mounts()
+        _, mounts = read_mounts("tests/mtab.291276", [])
         self.assertEqual(len(mounts), 1, "one mount point should be detected")
         self.assertEqual(mounts[0], "/media/ACER UFD")
 
@@ -524,7 +519,7 @@ def format_header():
 def main():
     """Define main program."""
     parse_options()
-    devices, mounts = read_mounts()
+    devices, mounts = read_mounts(opts["mtab"], opts["skip_list"])
     print(format_header())
     stats_factory = StatsFactory(opts["reserved"])
     size_formatter = SizeFormatter(opts["smart"], opts["placing"],
