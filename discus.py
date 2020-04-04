@@ -204,6 +204,59 @@ class SizeFormatterTests(unittest.TestCase):
         self.assertEqual(sf.format(1000), "1.0 MB", "1000 fail")
 
 
+class DiskData:
+    """
+    Class representing a disk's data, formatted for output, in string form.
+    """
+    Base = namedtuple('BaseDiskData',
+                      ['percent', 'total', 'used', 'free', 'mount', 'device'])
+
+    @staticmethod
+    def get(stats, percent, mount, device, size_formatter):
+        """Factory method returning a BaseDiskData instance."""
+        sf = size_formatter
+        return DiskData.Base(f"{percent:.1f}%",
+                             sf.format(stats.total / 1024),
+                             sf.format(stats.used / 1024),
+                             sf.format(stats.free / 1024),
+                             DiskData.__trim(mount),
+                             DiskData.__trim(device))
+
+    @staticmethod
+    def __trim(text):
+        """Don't let long names mess up the display: shorten them."""
+        # TODO rework
+        where = len(text)
+        where = where - 10
+        if where > 0:
+            text = "+" + text[where:]
+
+        return text
+
+
+class DiskDataTests(unittest.TestCase):
+    """Unit tests for the DiskData class"""
+
+    def test_get(self):
+        """Tests for the get method."""
+        sf = SizeFormatter(*SizeFormatter.Options())
+        mount = "/"
+        device = "/dev/sda1"
+        d = DiskData.get(StatsFactory.Stats(1000000, 1000000 - 50000, 50000),
+                         5.0,
+                         mount,
+                         device,
+                         sf)
+        self.assertEqual(d.percent, "5.0%", "percent doesn't match")
+        self.assertEqual(d.total, "976.6 KB", "total doesn't match")
+        self.assertEqual(d.used, "48.8 KB", "used doesn't match")
+        self.assertEqual(d.free, "927.7 KB", "free doesn't match")
+        self.assertEqual(d.mount, mount, "mount doesn't match")
+        self.assertEqual(d.device, device, "device doesn't match")
+
+# TODO add test cases for checking the behaviour of __trim
+
+
 class Disk:
     """Contains everything needed to represent a disk textually."""
 
