@@ -265,50 +265,33 @@ class Disk:
         Collect the stats when the object is created, and store them for later,
         when a report is requested.
         """
-        self.__stats = stats_factory.getStats(mount)
-        self.__device = device
-        self.__mount = mount
-        self.__size_formatter = size_formatter
+        stats = stats_factory.getStats(mount)
+        self.__percent = self.__percentage(stats.free, stats.total)
+        self.__data = DiskData.get(stats, self.__percent, mount, device,
+                                   size_formatter)
 
     def report(self):
         """Generate a report, and return it as text."""
-        percent = self.__percentage()
-        total = self.__format(self.__stats.total / 1024)
-        used = self.__format(self.__stats.used / 1024)
-        free = self.__format(self.__stats.free / 1024)
-
         # Perform a swaparoo if the user wants the device names instead
         # of my pretty bar graph.
+        d = self.__data
         if opts["graph"]:
-            graph = self.__graph(percent)
-            mount = self.__trim(self.__mount)
+            graph = self.__graph(self.__percent)
+            mount = d.mount
         else:
-            graph = self.__trim(self.__mount)
-            mount = self.__trim(self.__device)
+            graph = d.mount
+            mount = d.device
 
         # Format the result, and return it.
-        return color("normal") + "%-11s %12s %12s %12s   %5.1f%%   %s" % \
+        return color("normal") + "%-11s %12s %12s %12s   %6s   %s" % \
             (
                 mount,
-                total,
-                used,
-                free,
-                percent,
+                d.total,
+                d.used,
+                d.free,
+                d.percent,
                 graph
             ) + color("clear")
-
-    def __format(self, size):
-        """Format the size for human use."""
-        return self.__size_formatter.format(size)
-
-    def __percentage(self):
-        """Compute the percentage of space used."""
-        try:
-            ratio = 1.0 - self.__stats.free / self.__stats.total
-        except ZeroDivisionError:
-            ratio = 0.0
-
-        return 100 * ratio
 
     def __graph(self, percent):
         """Format a percentage as a bar graph."""
@@ -341,14 +324,13 @@ class Disk:
                 graph_fill * percent
             )
 
-    def __trim(self, text):
-        """Don't let long names mess up the display: shorten them."""
-        where = len(text)
-        where = where - 10
-        if where > 0:
-            text = "+" + text[where:]
+    @staticmethod
+    def __percentage(free, total):
+        """Compute the percentage of space used."""
+        if total == 0:
+            return 0.0
 
-        return text
+        return 100 * (1.0 - free / total)
 
 
 def version():
