@@ -11,7 +11,7 @@ Features include color, bar graphs, and smart formatting of numbers
 gigabytes, or terabytes). Or choose your own size, along with specifying the
 number of decimal places you'd like to see.
 
-To configure Discus on a system-wide basis, edit the **/etc/discusrc** file. 
+To configure Discus on a system-wide basis, edit the **/etc/discusrc** file.
 But you should probably change things just for yourself, by copying
 **/etc/discusrc** to **~/.discusrc** and editing that.
 
