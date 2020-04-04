@@ -202,6 +202,7 @@ class SizeFormatterTests(unittest.TestCase):
         self.assertEqual(sf.format(124684), "121.8 MB", "124684 fail")
         self.assertEqual(sf.format(1024), "1.0 MB", "1024 fail")
         self.assertEqual(sf.format(1), "1.0 KB", "1 fail")
+        self.assertEqual(sf.format(0), "0 KB", "0 fail")
         self.assertEqual(sf.format(999), "999.0 KB", "999 fail")
         self.assertEqual(sf.format(1000), "1.0 MB", "1000 fail")
 
