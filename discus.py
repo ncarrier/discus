@@ -51,10 +51,9 @@ class StatsFactory:
         # available blocks (but keep counting free space with all free blocks)
         if self.__reserved:
             free = stats.f_bavail * stats.f_frsize
-            used = total - stats.f_bfree * stats.f_frsize
         else:
             free = stats.f_bfree * stats.f_frsize
-            used = total - stats.f_bfree * stats.f_frsize
+        used = total - stats.f_bfree * stats.f_frsize
 
         return self.__stats_class(total=total, free=free, used=used)
 
