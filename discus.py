@@ -38,10 +38,11 @@ EX_CONFIG = 78
 
 class StatsFactory:
     """Factory class to get statistics about a mount point."""
+    Stats = namedtuple('Stats', ['total', 'free', 'used'])
+
     def __init__(self, reserved):
         """Constructor, initialize private fields."""
         self.__reserved = reserved
-        self.__stats_class = namedtuple('Stats', ['total', 'free', 'used'])
 
     def getStats(self, mount):
         """Gather statistics about specified filesystem."""
@@ -55,7 +56,7 @@ class StatsFactory:
             free = stats.f_bfree * stats.f_frsize
         used = total - stats.f_bfree * stats.f_frsize
 
-        return self.__stats_class(total=total, free=free, used=used)
+        return StatsFactory.Stats(total=total, free=free, used=used)
 
 
 class StatsFactoryTests(unittest.TestCase):
