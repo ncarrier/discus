@@ -118,16 +118,13 @@ class SizeFormatter:
         Format the size for human use.
         size: size in kilobytes.
         """
-        labels = self.__akabytes
-
         size, divisor, places = self.__formatter(size)
+        if size == 0:
+            places = 0
+        unit = self.__akabytes[divisor]
 
         # And now actually format the result.
-        if size == 0:
-            result = "%d %s" % (size, labels[divisor])
-        else:
-            result = "%%0.%df %%s" % places
-            result = result % (size, labels[divisor])
+        result = f"{size:0.{places}f} {unit}"
 
         return result
 
