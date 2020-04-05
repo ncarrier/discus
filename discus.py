@@ -204,6 +204,9 @@ class SizeFormatterTests(unittest.TestCase):
         self.assertEqual(sf.format(1000), "1.0 MB", "1000 fail")
 
 
+Mount = namedtuple('Mount', ['mount', 'device'])
+
+
 class DiskData:
     """
     Class representing a disk's data, formatted for output, in string form.
@@ -212,15 +215,15 @@ class DiskData:
                       ['percent', 'total', 'used', 'free', 'mount', 'device'])
 
     @staticmethod
-    def get(stats, percent, mount, device, size_formatter):
+    def get(stats, percent, mount, size_formatter):
         """Factory method returning a BaseDiskData instance."""
         sf = size_formatter
         return DiskData.Base(f"{percent:.1f}%",
                              sf.format(stats.total / 1024),
                              sf.format(stats.used / 1024),
                              sf.format(stats.free / 1024),
-                             DiskData.__trim(mount),
-                             DiskData.__trim(device))
+                             DiskData.__trim(mount.mount),
+                             DiskData.__trim(mount.device))
 
     @staticmethod
     def __trim(text):
@@ -240,19 +243,17 @@ class DiskDataTests(unittest.TestCase):
     def test_get(self):
         """Tests for the get method."""
         sf = SizeFormatter(*SizeFormatter.Options())
-        mount = "/"
-        device = "/dev/sda1"
+        mount = Mount("/", "/dev/sda1")
         d = DiskData.get(StatsFactory.Stats(1000000, 1000000 - 50000, 50000),
                          5.0,
                          mount,
-                         device,
                          sf)
         self.assertEqual(d.percent, "5.0%", "percent doesn't match")
         self.assertEqual(d.total, "976.6 KB", "total doesn't match")
         self.assertEqual(d.used, "48.8 KB", "used doesn't match")
         self.assertEqual(d.free, "927.7 KB", "free doesn't match")
-        self.assertEqual(d.mount, mount, "mount doesn't match")
-        self.assertEqual(d.device, device, "device doesn't match")
+        self.assertEqual(d.mount, mount.mount, "mount doesn't match")
+        self.assertEqual(d.device, mount.device, "device doesn't match")
 
 # TODO add test cases for checking the behaviour of __trim
 
@@ -260,14 +261,14 @@ class DiskDataTests(unittest.TestCase):
 class Disk:
     """Contains everything needed to represent a disk textually."""
 
-    def __init__(self, device, mount, stats_factory, size_formatter):
+    def __init__(self, mount, stats_factory, size_formatter):
         """
         Collect the stats when the object is created, and store them for later,
         when a report is requested.
         """
-        stats = stats_factory.getStats(mount)
+        stats = stats_factory.getStats(mount.mount)
         self.__percent = self.__percentage(stats.free, stats.total)
-        self.__data = DiskData.get(stats, self.__percent, mount, device,
+        self.__data = DiskData.get(stats, self.__percent, mount,
                                    size_formatter)
 
     def report(self):
@@ -428,7 +429,6 @@ def parse_options():
 def read_mounts(mtab, skip_list):
     """Read the mounts file."""
     mounts = []
-    devices = []
 
     # If the first letter of the mtab file begins with a !, it is a
     # shell command to be executed, and not a file to be read.  Idea
@@ -456,27 +456,25 @@ def read_mounts(mtab, skip_list):
         if mount in skip_list:
             continue
 
-        devices.append(device)
-        mounts.append(mount)
+        mounts.append(Mount(mount, device))
 
-    return devices, mounts
+    return mounts
 
 
 class ReadMountsTests(unittest.TestCase):
     """Tests for the read_mounts function."""
     def test_simple_mtab(self):
         """Test with a simple mtabe consisting of only one line."""
-        devices, mounts = read_mounts("tests/mtab.oneline", [])
-        self.assertEqual(len(devices), 1, "one device should be detected")
-        self.assertEqual(devices[0], "/dev/sda2")
-        self.assertEqual(len(mounts), 1, "one mount point should be detected")
-        self.assertEqual(mounts[0], "/")
+        mounts = read_mounts("tests/mtab.oneline", [])
+        self.assertEqual(len(mounts), 1, "one device should be detected")
+        self.assertEqual(mounts[0].device, "/dev/sda2")
+        self.assertEqual(mounts[0].mount, "/")
 
     def test_bug_291276(self):
         """Test to reproduce the debian bug 291276."""
-        _, mounts = read_mounts("tests/mtab.291276", [])
+        mounts = read_mounts("tests/mtab.291276", [])
         self.assertEqual(len(mounts), 1, "one mount point should be detected")
-        self.assertEqual(mounts[0], "/media/ACER UFD")
+        self.assertEqual(mounts[0].mount, "/media/ACER UFD")
 
 
 def color(code):
@@ -508,19 +506,15 @@ def format_fields(f, w):
 def main():
     """Define main program."""
     parse_options()
-    devices, mounts = read_mounts(opts["mtab"], opts["skip_list"])
+    mounts = read_mounts(opts["mtab"], opts["skip_list"])
     headers = get_header(opts["graph"])
     stats_factory = StatsFactory(opts["reserved"])
     size_formatter = SizeFormatter(opts["smart"], opts["placing"],
                                    opts["akabytes"], opts["places"],
                                    opts["divisor"])
 
-    # Create a disk object for each mount, and print a report.
-    reports = []
-    for count in range(0, len(devices)):
-        disk = Disk(devices[count], mounts[count], stats_factory,
-                    size_formatter)
-        reports.append(disk.report())
+    # Create a disk object for each mount, store its report.
+    reports = [Disk(m, stats_factory, size_formatter).report() for m in mounts]
 
     widths = [11, 11, 12, 12, 8, 14]
     print(color("header") + format_fields(headers, widths))
