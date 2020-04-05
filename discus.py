@@ -24,6 +24,8 @@ import os
 import sys
 import re
 import unittest
+import copy
+import shutil
 from collections import namedtuple
 
 opts = {"placing": True, "reserved": True}
@@ -222,8 +224,8 @@ class DiskData:
                              sf.format(stats.total / 1024),
                              sf.format(stats.used / 1024),
                              sf.format(stats.free / 1024),
-                             DiskData.__trim(mount.mount),
-                             DiskData.__trim(mount.device))
+                             mount.mount,
+                             mount.device)
 
     @staticmethod
     def __trim(text):
@@ -273,49 +275,35 @@ class Disk:
 
     def report(self):
         """Generate a report, and return it as text."""
-        # Perform a swaparoo if the user wants the device names instead
-        # of my pretty bar graph.
         d = self.__data
-        if opts["graph"]:
-            graph = Disk.__graph(self.__percent)
-            mount = d.mount
-        else:
-            graph = d.mount
-            mount = d.device
-
-        return [mount, d.total, d.used, d.free, d.percent, graph]
+        return [d.mount if opts["graph"] else d.device, d.total, d.used,
+                d.free, d.percent, self.__percent]
 
     @staticmethod
-    def __graph(percent):
+    def graph(percent, width):
         """Format a percentage as a bar graph."""
         # How many stars to place?
-        percent = percent / 10
-        percent = round(percent)
-        percent = int(percent)
-        percent = 10 - percent
+        # -4 accounts for the [] and the two starting spaces
+        width = width - 4
+        bar_width = int(round(percent * width / 100))
 
         # Now generate the string, using the characters in the config file.
-        result = color("safe")
+        result = ""
         graph_char = opts["graph_char"]
         graph_fill = opts["graph_fill"]
-        for counter in range(0, (10 - percent)):
-            if counter < 6:
+        for counter in range(0, width):
+            if counter >= bar_width:
+                result = result + graph_fill
+            elif counter < 0.6 *  bar_width:
                 result = result + graph_char
-            elif counter == 6:
+            elif counter < 0.7 *  bar_width:
                 result = result + color("warning") + graph_char
-            elif counter == 7:
+            elif counter < 0.8 *  bar_width:
                 result = result + "*"
-            elif counter == 8:
+            else:
                 result = result + color("danger") + graph_char
-            elif counter == 9:
-                result = result + graph_char
 
-        result = result + color("normal")
-        return "  [%s%s]" % \
-            (
-                result,
-                graph_fill * percent
-            )
+        return "  [" + color("safe") + result + color("normal") + "]"
 
     @staticmethod
     def __percentage(free, total):
@@ -489,9 +477,9 @@ def get_header(graph):
     """Generate a list of headers."""
     # Has the user requested to see device names instead of a graph?
     if graph:
-        return ["Mount", "Total", "Used", "Avail", "Prcnt", "Graph"]
+        return ["Mount", "Total", "Used", "Avail", "Prcnt", "  Graph"]
     else:
-        return ["Device", "Total", "Used", "Avail", "Prcnt", "Mount"]
+        return ["Device", "Total", "Used", "Avail", "Prcnt", "  Mount"]
 
 
 def format_fields(f, w):
@@ -499,9 +487,23 @@ def format_fields(f, w):
     Format a list of fields into one string, given a list of corresponding
     widths.
     """
-    a = ["", ">", ">", ">", ">", ">"]
+    a = ["", ">", ">", ">", ">", ""]
     return " ".join([f"{f[i]:{a[i]}{w[i]}}" for i in range(0, len(w))])
 
+
+def get_layout(headers, reports):
+    widths = [11, 11, 12, 12, 8, 14]
+    inputs = [copy.deepcopy(headers)] + copy.deepcopy(reports)
+
+    size = shutil.get_terminal_size((80, 20))
+    for l in inputs:
+        for i, v in enumerate(l[:-1]):
+            if len(v) > widths[i]:
+                widths[i] = len(v)
+
+    widths[-1] = size.columns - sum(widths[:-1]) - 10
+
+    return widths
 
 def main():
     """Define main program."""
@@ -516,10 +518,11 @@ def main():
     # Create a disk object for each mount, store its report.
     reports = [Disk(m, stats_factory, size_formatter).report() for m in mounts]
 
-    widths = [11, 11, 12, 12, 8, 14]
+    widths  = get_layout(headers, reports)
     print(color("header") + format_fields(headers, widths))
     for report in reports:
-        print(color("normal") + format_fields(report, widths) + color("clear"))
+        r = report[:-1] + [Disk.graph(report[-1], widths[-1])]
+        print(color("normal") + format_fields(r, widths) + color("clear"))
 
 
 if __name__ == "__main__":
