@@ -276,24 +276,16 @@ class Disk:
         # of my pretty bar graph.
         d = self.__data
         if opts["graph"]:
-            graph = self.__graph(self.__percent)
+            graph = Disk.__graph(self.__percent)
             mount = d.mount
         else:
             graph = d.mount
             mount = d.device
 
-        # Format the result, and return it.
-        return color("normal") + "%-11s %12s %12s %12s   %6s   %s" % \
-            (
-                mount,
-                d.total,
-                d.used,
-                d.free,
-                d.percent,
-                graph
-            ) + color("clear")
+        return [mount, d.total, d.used, d.free, d.percent, graph]
 
-    def __graph(self, percent):
+    @staticmethod
+    def __graph(percent):
         """Format a percentage as a bar graph."""
         # How many stars to place?
         percent = percent / 10
@@ -318,7 +310,7 @@ class Disk:
                 result = result + graph_char
 
         result = result + color("normal")
-        return "[%s%s]" % \
+        return "  [%s%s]" % \
             (
                 result,
                 graph_fill * percent
@@ -495,42 +487,45 @@ def color(code):
     return ""
 
 
-def format_header():
-    """Generate a colored heading."""
+def get_header(graph):
+    """Generate a list of headers."""
     # Has the user requested to see device names instead of a graph?
-    if opts["graph"]:
-        mount = "Mount"
-        graph = " Graph"
+    if graph:
+        return ["Mount", "Total", "Used", "Avail", "Prcnt", "Graph"]
     else:
-        mount = "Device"
-        graph = "Mount"
+        return ["Device", "Total", "Used", "Avail", "Prcnt", "Mount"]
 
-    return color("header") + "%-16s%-14s%-13s%-11s%-10s%s" % \
-        (
-            mount,
-            "Total",
-            "Used",
-            "Avail",
-            "Prcnt",
-            graph
-        ) + color("clear")
+
+def format_fields(f, w):
+    """
+    Format a list of fields into one string, given a list of corresponding
+    widths.
+    """
+    a = ["", ">", ">", ">", ">", ">"]
+    return " ".join([f"{f[i]:{a[i]}{w[i]}}" for i in range(0, len(w))])
 
 
 def main():
     """Define main program."""
     parse_options()
     devices, mounts = read_mounts(opts["mtab"], opts["skip_list"])
-    print(format_header())
+    headers = get_header(opts["graph"])
     stats_factory = StatsFactory(opts["reserved"])
     size_formatter = SizeFormatter(opts["smart"], opts["placing"],
                                    opts["akabytes"], opts["places"],
                                    opts["divisor"])
 
     # Create a disk object for each mount, and print a report.
+    reports = []
     for count in range(0, len(devices)):
         disk = Disk(devices[count], mounts[count], stats_factory,
                     size_formatter)
-        print(disk.report())
+        reports.append(disk.report())
+
+    widths = [11, 11, 12, 12, 8, 14]
+    print(color("header") + format_fields(headers, widths))
+    for report in reports:
+        print(color("normal") + format_fields(report, widths) + color("clear"))
 
 
 if __name__ == "__main__":
