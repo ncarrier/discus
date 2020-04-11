@@ -48,7 +48,11 @@ class StatsFactory:
 
     def getStats(self, mount):
         """Gather statistics about specified filesystem."""
-        stats = os.statvfs(mount)
+        try:
+            stats = os.statvfs(mount)
+        except PermissionError:
+            return StatsFactory.Stats(total="-", free="-", used="-")
+
         total = stats.f_blocks * stats.f_frsize
         # if we have to take care of reserved space for root, then use
         # available blocks (but keep counting free space with all free blocks)
@@ -220,10 +224,19 @@ class DiskData:
     def get(stats, percent, mount, size_formatter):
         """Factory method returning a BaseDiskData instance."""
         sf = size_formatter
-        return DiskData.Base(f"{percent:.1f}%",
-                             sf.format(stats.total / 1024),
-                             sf.format(stats.used / 1024),
-                             sf.format(stats.free / 1024),
+        if not isinstance(percent, str):
+            percent = f"{percent:.1f}%"
+            total = sf.format(stats.total / 1024)
+            used = sf.format(stats.used / 1024)
+            free = sf.format(stats.free / 1024)
+        else:
+            total = stats.total
+            used = stats.used
+            free = stats.free
+        return DiskData.Base(percent,
+                             total,
+                             used,
+                             free,
                              mount.mount,
                              mount.device)
 
@@ -269,7 +282,10 @@ class Disk:
         when a report is requested.
         """
         stats = stats_factory.getStats(mount.mount)
-        self.__percent = self.__percentage(stats.free, stats.total)
+        if isinstance(stats.free, str):
+            self.__percent = "-"
+        else:
+            self.__percent = self.__percentage(stats.free, stats.total)
         self.__data = DiskData.get(stats, self.__percent, mount,
                                    size_formatter)
 
@@ -285,7 +301,10 @@ class Disk:
         # How many stars to place?
         # -4 accounts for the [] and the two starting spaces
         width = width - 4
-        bar_width = int(round(percent * width / 100))
+        if isinstance(percent, str):
+            bar_width = 0
+        else:
+            bar_width = int(round(percent * width / 100))
 
         # Now generate the string, using the characters in the config file.
         result = ""
