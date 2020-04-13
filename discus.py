@@ -300,28 +300,29 @@ class Disk:
     def graph(percent, width):
         """Format a percentage as a bar graph."""
         # How many stars to place?
-        # -4 accounts for the [] and the two starting spaces
-        width = width - 4
+        # -4 accounts for the [] and the starting space
+        width = width - 3
         if isinstance(percent, str):
             bar_width = 0
         else:
             bar_width = int(round(percent * width / 100))
 
         # Now generate the string, using the characters in the config file.
-        result = ""
+        result = color("safe")
         graph_char = opts["graph_char"]
         graph_fill = opts["graph_fill"]
-        for counter in range(0, width):
-            if counter >= bar_width:
-                result = result + graph_fill
-            elif counter < 0.6 *  bar_width:
-                result = result + graph_char
-            elif counter < 0.7 *  bar_width:
-                result = result + color("warning") + graph_char
-            elif counter < 0.8 *  bar_width:
-                result = result + "*"
-            else:
-                result = result + color("danger") + graph_char
+        for counter in range(1, width + 1):
+            if counter > bar_width:
+                break
+
+            if counter >= 0.7 *  width and counter < 0.85 * width:
+                result = result + color("warning")
+            elif counter >= 0.85 * width:
+                result = result + color("danger")
+
+            result = result + graph_char
+
+        result = result + (width - counter) * graph_fill
 
         return "  [" + color("safe") + result + color("normal") + "]"
 
