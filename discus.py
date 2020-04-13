@@ -315,7 +315,7 @@ class Disk:
             if counter > bar_width:
                 break
 
-            if counter >= 0.7 *  width and counter < 0.85 * width:
+            if counter >= 0.7 * width and counter < 0.85 * width:
                 result = result + color("warning")
             elif counter >= 0.85 * width:
                 result = result + color("danger")
@@ -532,6 +532,7 @@ def get_layout(headers, reports):
 
     return widths
 
+
 def main():
     """Define main program."""
     parse_options()
@@ -545,7 +546,7 @@ def main():
     # Create a disk object for each mount, store its report.
     reports = [Disk(m, stats_factory, size_formatter).report() for m in mounts]
 
-    widths  = get_layout(headers, reports)
+    widths = get_layout(headers, reports)
     print(color("header") + format_fields(headers, widths))
     for report in reports:
         r = report[:-1] + [Disk.graph(report[-1], widths[-1])]
