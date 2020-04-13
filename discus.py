@@ -281,7 +281,8 @@ class Disk:
         """Generate a report, and return it as text."""
         d = self.__data
         return [d.mount if opts["graph"] else d.device, d.total, d.used,
-                d.free, d.percent, self.__percent]
+                d.free, d.percent,
+                self.__percent if opts["graph"] else d.mount]
 
     @staticmethod
     def graph(percent, width):
@@ -546,7 +547,10 @@ def main():
     widths = get_layout(headers, reports)
     print(color("header") + format_fields(headers, widths))
     for report in reports:
-        r = report[:-1] + [Disk.graph(report[-1], widths[-1])]
+        if opts["graph"]:
+            r = report[:-1] + [Disk.graph(report[-1], widths[-1])]
+        else:
+            r = report[:-1] + ["  " + Disk.trim(report[-1], widths[-1] - 2)]
         # trim mount field if it exceeds its alloted width
         if len(r[0]) >= widths[0]:
             r[0] = Disk.trim(r[0], widths[0] - 1)
