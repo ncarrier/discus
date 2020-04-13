@@ -12,6 +12,8 @@
 ##  Labels to display next to numbers.  Thanks to Frank Elsner.
 opts["akabytes"] = ["KB", "MB", "GB", "TB", "PB", "EB"]
 opts["color"] = 1
+# Power of 1024, smallest value is 0, for KB, used only when smart formatting
+# is disabled, overridden by -t, -g, -m and -k options
 opts["divisor"] = 1
 opts["graph"] = 1
 opts["graph_char"] = "*"
@@ -71,3 +73,11 @@ opts["color_danger"] = bold + red        ##  85%-100% full
 
 
 ##  EOF
+
+
+
+if graph
+	mount, total, used, free, percent, graph
+else
+	device, total, used, free, percent, mount
+

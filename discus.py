@@ -28,6 +28,8 @@ import copy
 import shutil
 from collections import namedtuple
 
+# TODO understand what this placing thing is about since no code path can have
+# it set to False, except if the user set it explicitly in the config
 opts = {"placing": True, "reserved": True}
 
 VERSION = "0.4.0"
@@ -94,6 +96,9 @@ class StatsFactoryTests(unittest.TestCase):
         except Exception:
             raised = True
         self.assertTrue(raised)
+
+
+# TODO add test on permission error case
 
 
 class SizeFormatter:
