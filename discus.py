@@ -31,6 +31,7 @@ from collections import namedtuple
 opts = {"placing": True, "reserved": True}
 
 VERSION = "0.4.0"
+MINIMUM_WIDTH = 68
 
 # values taken from sysexit.h
 EX_OK = 0
@@ -511,16 +512,22 @@ def format_fields(f, w):
 
 
 def get_layout(headers, reports):
-    widths = [11, 11, 12, 12, 8, 14]
+    graph_column_width = 14
+    widths = [11, 11, 12, 12, 8, graph_column_width]
     inputs = [copy.deepcopy(headers)] + copy.deepcopy(reports)
 
-    size = shutil.get_terminal_size((80, 20))
+    size = shutil.get_terminal_size((MINIMUM_WIDTH, 20))
+    # limit the width to a minimum and account to the inter-column gap
+    columns = max(MINIMUM_WIDTH, size.columns - len(widths))
     for l in inputs:
         for i, v in enumerate(l[:-1]):
             if len(v) > widths[i]:
                 widths[i] = len(v)
 
-    widths[-1] = size.columns - sum(widths[:-1]) - 10
+    widths[-1] = columns - sum(widths[:-1]) - 10
+    if widths[-1] < graph_column_width:
+        widths[-1] = graph_column_width
+    widths[0] = columns - sum(widths[1:])
 
     return widths
 
