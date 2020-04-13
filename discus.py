@@ -241,17 +241,6 @@ class DiskData:
                              mount.mount,
                              mount.device)
 
-    @staticmethod
-    def __trim(text):
-        """Don't let long names mess up the display: shorten them."""
-        # TODO rework
-        where = len(text)
-        where = where - 10
-        if where > 0:
-            text = "+" + text[where:]
-
-        return text
-
 
 class DiskDataTests(unittest.TestCase):
     """Unit tests for the DiskData class"""
@@ -270,8 +259,6 @@ class DiskDataTests(unittest.TestCase):
         self.assertEqual(d.free, "927.7 KB", "free doesn't match")
         self.assertEqual(d.mount, mount.mount, "mount doesn't match")
         self.assertEqual(d.device, mount.device, "device doesn't match")
-
-# TODO add test cases for checking the behaviour of __trim
 
 
 class Disk:
@@ -333,6 +320,16 @@ class Disk:
             return 0.0
 
         return 100 * (1.0 - free / total)
+
+    @staticmethod
+    def trim(text, width):
+        """Don't let long names mess up the display: shorten them."""
+        where = len(text)
+        where = where - width
+        if where > 0:
+            text = "+" + text[where:]
+
+        return text
 
 
 def version():
@@ -550,6 +547,9 @@ def main():
     print(color("header") + format_fields(headers, widths))
     for report in reports:
         r = report[:-1] + [Disk.graph(report[-1], widths[-1])]
+        # trim mount field if it exceeds its alloted width
+        if len(r[0]) >= widths[0]:
+            r[0] = Disk.trim(r[0], widths[0] - 1)
         print(color("normal") + format_fields(r, widths) + color("clear"))
 
 
