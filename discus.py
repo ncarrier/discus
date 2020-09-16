@@ -106,8 +106,8 @@ class SizeFormatter:
     DEFAULT_AKABYTES = ["KB", "MB", "GB", "TB", "PB", "EB"]
     # helper class for manipulating options
     Options = namedtuple("Options", ["smart", "placing", "akabytes", "places",
-                                     "divisor"],
-                         defaults=(True, True, DEFAULT_AKABYTES, 1, 1))
+                                     "divisor"])
+    Options.__new__.__defaults__ = (True, True, DEFAULT_AKABYTES, 1, 1)
 
     def __init__(self, smart, placing, akabytes, places, divisor):
         """Constructor, initialize private fields."""
