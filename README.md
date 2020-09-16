@@ -61,7 +61,15 @@ cp discus.1.gz /usr/local/man/man1
 chmod a+r /usr/local/man/man1/discus.1.gz
 ```
 
-## Test
+## Development
+
+### Required packages
+
+Command to install development packages for debian 10:
+
+```
+sudo apt install pep8 moreutils
+```
 
 ### Unit tests
 
