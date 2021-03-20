@@ -107,7 +107,6 @@ These problems remain unfixed as of this release:
 
 Simple things I'm considering adding to Discus:
 
- * Adapt the width to the terminal's display.
  * Choose your own column labels.
  * Compact option to squeeze in everything including device name.
  * A Makefile for non-Debian users, or rather, setuptools support.
