@@ -68,7 +68,7 @@ chmod a+r /usr/local/man/man1/discus.1.gz
 Command to install development packages for debian 10:
 
 ```
-sudo apt install pep8 moreutils
+sudo apt install flake8 moreutils
 ```
 
 ### Unit tests
@@ -93,7 +93,7 @@ ln -s ../../tests/pre-commit.sh .git/hooks/pre-commit
 ## Coding style
 
 The source code follows the PEP8 coding style, which can be checked with, for
-example, the `pep8` or the `flake8` command-line tools in debian.
+example, the `flake8` or the `pep8` command-line tools in debian.
 
 ## Known bugs
 
