@@ -28,7 +28,62 @@ import copy
 import shutil
 from collections import namedtuple
 
-opts = {"placing": True, "reserved": True}
+
+# These colors should work on VT100-type displays and can be overridden by the
+# user.
+black = "\033[30m"
+red = "\033[31m"
+green = "\033[32m"
+yellow = "\033[33m"
+blue = "\033[34m"
+magenta = "\033[35m"
+cyan = "\033[36m"
+white = "\033[37m"
+
+on_black = "\033[40m"
+on_red = "\033[41m"
+on_green = "\033[42m"
+on_yellow = "\033[43m"
+on_blue = "\033[44m"
+on_magenta = "\033[45m"
+on_cyan = "\033[46m"
+on_white = "\033[47m"
+
+normal = "\033[0m"
+bold = "\033[1m"
+underline = "\033[4m"
+blink = "\033[5m"
+reverse = "\033[7m"
+dim = "\033[8m"
+
+opts = {
+    "placing": True,
+    "reserved": True,
+    # Labels to display next to numbers.
+    "akabytes": ["KB", "MB", "GB", "TB", "PB", "EB"],
+    "color": 1,
+    # Power of 1024, smallest value is 0, for KB, used only when smart
+    # formatting is disabled, overridden by -t, -g, -m and -k options
+    "divisor": 1,
+    "graph": 1,
+    "graph_char": "*",
+    "graph_fill": "-",
+    # Example mtab entry that uses a shell command (always use a ! as
+    # first character) rather than a file:
+    #        !/bin/mount |awk '{print $1, $3}'"
+    "mtab": "/etc/mtab",
+    #  Number of decimal places to display, same as -p
+    "places": 1,
+    # Filesystems to ignore.
+    "skip_list": ["/dev/pts", "/proc", "/dev", "/proc/usb", "/sys"],
+    #  Use smart formatting of numbers.
+    "smart": 1,
+    "color_header": blue,
+    "color_normal": normal,
+    "color_safe": normal,             # 0%- 70% full
+    "color_warning": bold + yellow,   # 70%- 85% full
+    "color_danger": bold + red        # 85%-100% full
+}
 
 VERSION = "0.4.0"
 MINIMUM_WIDTH = 68
@@ -558,14 +613,14 @@ def main():
 
 
 if __name__ == "__main__":
-    # Before starting, we need to load the configuration files which
-    # contain global objects.  First the global /etc file, then the user's
-    # file, if exists.
+    # Before starting, we try to load the configuration files which may
+    # override global objects' values.
+    # First the global /etc file, then the user's file, if it exists.
     try:
         exec(compile(open("/etc/discusrc", "rb").read(), "/etc/discusrc",
              'exec'))
     except IOError:
-        usage(EX_CONFIG, "/etc/discusrc must exist and be readable.")
+        pass
 
     try:
         exec(compile(open(os.environ['HOME'] + "/.discusrc", "rb").read(),
