@@ -518,8 +518,8 @@ def get_layout(headers, reports):
     size = shutil.get_terminal_size((MINIMUM_WIDTH, 20))
     # limit the width to a minimum and account to the inter-column gap
     columns = max(MINIMUM_WIDTH, size.columns - len(widths))
-    for l in inputs:
-        for i, v in enumerate(l[:-1]):
+    for input in inputs:
+        for i, v in enumerate(input[:-1]):
             if len(v) > widths[i]:
                 widths[i] = len(v)
 
