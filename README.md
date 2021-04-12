@@ -65,7 +65,7 @@ chmod a+r /usr/local/man/man1/discus.1.gz
 
 ### Required packages
 
-Command to install development packages for debian 10:
+Command to install development packages for debian 10 and 11:
 
 ```
 sudo apt install flake8 moreutils
