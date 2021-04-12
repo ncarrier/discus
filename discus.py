@@ -3,6 +3,7 @@
 # Discus is a program that reports hard drive space usage.
 
 # Copyright 2000 Stormy Henderson (stormy@futuresouth.com).
+# Copyright 2019-2021 Nicolas Carrier (carrier.nicolas0@gmail.com).
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
