@@ -3,7 +3,7 @@
 ## Overview
 
 Discus is a program to display hard drive space usage, much like the standard
-UN*X command df.
+UNIX command df.
 
 Discus aims to make df(1) prettier.
 Features include color, bar graphs, and smart formatting of numbers
