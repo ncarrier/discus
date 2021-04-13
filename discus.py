@@ -28,6 +28,8 @@ import unittest
 import copy
 import shutil
 from collections import namedtuple
+import argparse
+from argparse import RawTextHelpFormatter
 
 
 # These colors should work on VT100-type displays and can be overridden by the
@@ -86,6 +88,7 @@ opts = {
     "color_danger": bold + red        # 85%-100% full
 }
 
+HOMEPAGE = "https://github.com/ncarrier/discus"
 VERSION = "0.5.0"
 MINIMUM_WIDTH = 68
 
@@ -420,7 +423,139 @@ Options are:
     sys.exit(exit_status)
 
 
-def parse_options():
+def parse_options(args=sys.argv[1:]):
+    """"""
+    parser = argparse.ArgumentParser(description=f"Discus version {VERSION}, "
+                                     "to display disk usage.",
+                                     formatter_class=RawTextHelpFormatter)
+    parser.add_argument("-d", "--device", action="store_true",
+                        default=False, help="show device instead of graph")
+    parser.add_argument("-c", "--color", action="store_false", default=True,
+                        help="disable color")
+    parser.add_argument("-g", "--gigabytes", action="store_const", const=2,
+                        dest="divisor", help="display sizes in gigabytes")
+    parser.add_argument("-k", "--kilobytes", action="store_const", const=0,
+                        dest="divisor", help="display sizes in kilobytes")
+    parser.add_argument("-m", "--megabytes", action="store_const", const=1,
+                        dest="divisor", help="display sizes in megabytes")
+    parser.add_argument("-p", "--places", type=int, choices=range(0, 10),
+                        help="number of digits to right of decimal place")
+    parser.add_argument("-r", "--reserved", action="store_true",
+                        default=False, help="count reserved space as used")
+    parser.add_argument("-s", "--smart", action="store_false", default=True,
+                        help="do not use smart formatting")
+    parser.add_argument("-t", "--terabytes", action="store_const", const=3,
+                        dest="divisor", help="display sizes in terabytes")
+    parser.add_argument("-v", "--version", action="version",
+                        version=(f"Discus version {VERSION} by Nicolas "
+                                 "Carrier (carrier.nicolas0@gmail.com)\n"
+                                 f"Home page: {HOMEPAGE}"))
+
+    return parser.parse_args(args)
+
+
+class ParseOptionsTests(unittest.TestCase):
+    """Tests for the parse_options function."""
+    def test_device(self):
+        """Test for the --device option."""
+        options = parse_options([])
+        self.assertFalse(options.device)
+        options = parse_options(["-d"])
+        self.assertTrue(options.device)
+        options = parse_options(["--device"])
+        self.assertTrue(options.device)
+
+    def test_color(self):
+        """Test for the --color option."""
+        options = parse_options([])
+        self.assertTrue(options.color)
+        options = parse_options(["-c"])
+        self.assertFalse(options.color)
+        options = parse_options(["--color"])
+        self.assertFalse(options.color)
+
+    def test_gigabytes(self):
+        """Test for the --gigabytes option."""
+        options = parse_options([])
+        self.assertEqual(options.divisor, None)
+        options = parse_options(["-g"])
+        self.assertEqual(options.divisor, 2)
+        options = parse_options(["--gigabytes"])
+        self.assertEqual(options.divisor, 2)
+
+    def test_kilobytes(self):
+        """Test for the --kilobytes option."""
+        options = parse_options([])
+        self.assertEqual(options.divisor, None)
+        options = parse_options(["-k"])
+        self.assertEqual(options.divisor, 0)
+        options = parse_options(["--kilobytes"])
+        self.assertEqual(options.divisor, 0)
+
+    def test_megabytes(self):
+        """Test for the --megabytes option."""
+        options = parse_options([])
+        self.assertEqual(options.divisor, None)
+        options = parse_options(["-m"])
+        self.assertEqual(options.divisor, 1)
+        options = parse_options(["--megabytes"])
+        self.assertEqual(options.divisor, 1)
+
+    def test_places(self):
+        options = parse_options([])
+        self.assertEqual(options.places, None)
+        options = parse_options(["-p", "0"])
+        self.assertEqual(options.places, 0)
+        options = parse_options(["-p", "9"])
+        self.assertEqual(options.places, 9)
+        with self.assertRaises((SystemExit, argparse.ArgumentError)):
+            parse_options(["-p", "10"])
+        with self.assertRaises((SystemExit, argparse.ArgumentError)):
+            parse_options(["-p", "-1"])
+
+    def test_reserved(self):
+        """ Test for the --reserved option."""
+        options = parse_options([])
+        self.assertFalse(options.reserved)
+        options = parse_options(["-r"])
+        self.assertTrue(options.reserved)
+        options = parse_options(["--reserved"])
+        self.assertTrue(options.reserved)
+
+    def test_smart(self):
+        options = parse_options([])
+        self.assertTrue(options.smart)
+        options = parse_options(["-s"])
+        self.assertFalse(options.smart)
+        options = parse_options(["--smart"])
+        self.assertFalse(options.smart)
+
+    def test_terabytes(self):
+        """Test for the --terabytes option."""
+        options = parse_options([])
+        self.assertEqual(options.divisor, None)
+        options = parse_options(["-t"])
+        self.assertEqual(options.divisor, 3)
+        options = parse_options(["--terabytes"])
+        self.assertEqual(options.divisor, 3)
+
+
+def interpret_options(o):
+    opts["smart"] = 1 if o.smart else 0
+    if o.divisor is not None:
+        if o.places is None:
+            opts["places"] = o.divisor
+        opts["divisor"] = o.divisor
+        opts["smart"] = 0
+    if o.places is not None:
+        opts["placing"] = True
+        opts["places"] = o.places
+    opts["graph"] = 0 if o.device else 1
+    opts["color"] = 1 if o.color else 0
+    opts["reserved"] = 1 if o.reserved else 0
+
+
+def parse_options_old():
     """Read the user's options and integrate them with the defaults."""
     try:
         options, _ = getopt.getopt(sys.argv[1:], "p:tgmksdcrvh",
@@ -589,7 +724,8 @@ def get_layout(headers, reports):
 
 def main():
     """Define main program."""
-    parse_options()
+    options = parse_options()
+    interpret_options(options)
     mounts = read_mounts(opts["mtab"], opts["skip_list"])
     headers = get_header(opts["graph"])
     stats_factory = StatsFactory(opts["reserved"])
