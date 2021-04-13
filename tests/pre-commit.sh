@@ -15,6 +15,7 @@ trap on_error ERR
 # 1. runs of discus with all the possible options, to check for regressions
 # 2. check the coding style
 # 3. run the unittests
-parallel -- "parallel ${root}/discus.py -- -h -c -d -s -t -g -m -k -v -r '' '-p 3'" \
+parallel -- "parallel ${root}/discus.py -- -h -c -d -s -t -g -m -k -v -r '-p 3'" \
+	"${root}/discus.py" \
 	"flake8 ${root}/discus.py" \
 	"python3 -m unittest ${root}/discus.py -v"
