@@ -86,7 +86,7 @@ opts = {
     "color_danger": bold + red        # 85%-100% full
 }
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 MINIMUM_WIDTH = 68
 
 # values taken from sysexit.h
