@@ -20,7 +20,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307
 # USA.
 import subprocess
-import getopt
 import os
 import sys
 import re
@@ -392,37 +391,6 @@ class Disk:
         return text
 
 
-def version():
-    """Print version."""
-    print("Discus version {} by Nicolas Carrier "
-          "(carrier.nicolas0@gmail.com).".format(VERSION))
-    print("Home page: https://github.com/ncarrier/discus")
-    sys.exit(0)
-
-
-def usage(exit_status, text=""):
-    """Print the help of the tool."""
-    # Only print the general help if no specific message is provided.
-    if text == "":
-        print("""Discus version %s, to display disk usage.
-Options are:
- -h, --help      display help
- -v, --version   display version
- -p number       number of digits to right of decimal place
- -s              do not use smart formatting
- -t, g, m, k     display sizes in tera/giga/mega/kilobytes, repectively.
-                    assumes -s
- -d              show device instead of graph
- -c              disable color
- -r              count reserved space as used
-""" % VERSION)
-
-    else:
-        print(text)
-
-    sys.exit(exit_status)
-
-
 def parse_options(args=sys.argv[1:]):
     """"""
     parser = argparse.ArgumentParser(description=f"Discus version {VERSION}, "
@@ -553,75 +521,6 @@ def interpret_options(o):
     opts["graph"] = 0 if o.device else 1
     opts["color"] = 1 if o.color else 0
     opts["reserved"] = 1 if o.reserved else 0
-
-
-def parse_options_old():
-    """Read the user's options and integrate them with the defaults."""
-    try:
-        options, _ = getopt.getopt(sys.argv[1:], "p:tgmksdcrvh",
-                                   ["help", "version"])
-    except Exception:
-        sys.exit(EX_USAGE)
-
-    for option, value in options:
-        # Display terabytes.
-        if option == "-t":
-            opts["divisor"] = 3
-            opts["smart"] = 0
-            opts["places"] = 3
-
-        # Display gigabytes.
-        if option == "-g":
-            opts["divisor"] = 2
-            opts["smart"] = 0
-            opts["places"] = 2
-
-        # Display megabytes.
-        if option == "-m":
-            opts["divisor"] = 1
-            opts["smart"] = 0
-            opts["places"] = 1
-
-        # Display kilobytes.
-        if option == "-k":
-            opts["divisor"] = 0
-            opts["smart"] = 0
-            opts["places"] = 0
-
-        # Display X decimal places.
-        if option == "-p":
-            opts["placing"] = True
-            fail = False
-            try:
-                opts["places"] = int(value)
-            except ValueError:
-                fail = True
-
-            if fail or opts["places"] < 0 or opts["places"] > 9:
-                usage(EX_USAGE, "The -p option requires a number from 0 to 9.")
-
-        # Disable smart display.
-        if option == "-s":
-            opts["smart"] = 0
-
-        # Show device instead of graph.
-        if option == "-d":
-            opts["graph"] = 0
-
-        # Turn off color.
-        if option == "-c":
-            opts["color"] = 0
-
-        # Display version.
-        if option in ["-v", "--version"]:
-            version()
-
-        # Display help.
-        if option in ["-h", "--help"]:
-            usage(EX_OK)
-
-        if option == "-r":
-            opts["reserved"] = 1
 
 
 def read_mounts(mtab, skip_list):
