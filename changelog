@@ -1,3 +1,14 @@
+VERSION 0.5.0 -----
+  o  Fix for issue https://github.com/ncarrier/discus/issues/1
+  o  A discusrc file isn't mandatory anymore
+
+
+VERSION 0.4.0 ----- March 13th, 2020
+  o  More standard return statuses, 64, for usage error, 78 for config
+  o  Display width adapted to the terminal size
+  o  Ignore silently statvfs permission errors
+
+
 VERSION 0.3.0 ----- March 27th, 2020
 
   o  Python 3 compatibility.
