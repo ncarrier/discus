@@ -77,7 +77,7 @@ Only a few unit tests exist at the time of writing, but one has to start
 somewhere :)
 
 ```
-python3 -m unittest discus.py -v
+PYTHONPATH=. python3 -m unittest tests.unit_tests -v
 ```
 
 ### Pre-commit tests
