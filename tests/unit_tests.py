@@ -34,6 +34,8 @@ class StatsFactoryTests(unittest.TestCase):
         self.assertTrue(raised)
 
 
+# TODO add test on permission error case
+
 class SizeFormatterTests(unittest.TestCase):
     """Unit tests for the SizeFormatter class"""
 

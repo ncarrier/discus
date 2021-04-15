@@ -4,6 +4,8 @@
 ##  To make personal modifications, copy this file to your home directory
 ##  with the name .discusrc
 
+# TODO comment everything in this file, which has the default value
+
 
 ##  An option is enabled if its value is 1, disabled if 0.  Multiple entries,
 ##  where applicable, must be enclosed in square brackets and separated with
