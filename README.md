@@ -107,6 +107,9 @@ These problems remain unfixed as of this release:
 
 Simple things I'm considering adding to Discus:
 
+ * A cleaner config file format, using argparse, deprecating the former
+   discusrc file format.
+ * Configure bash auto-completion.
  * Choose your own column labels.
  * Compact option to squeeze in everything including device name.
  * A Makefile for non-Debian users, or rather, setuptools support.
