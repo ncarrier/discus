@@ -18,5 +18,5 @@ export PYTHONPATH=${root}
 # 3. run the unittests
 parallel -- "parallel ${root}/discus.py -- -h -c -d -s -t -g -m -k -v -r '-p 3'" \
 	"${root}/discus.py" \
-	"flake8 ${root}/discus.py" \
+	"flake8 $(find ${root} -name *.py)" \
 	"python3 -m unittest tests.unit_tests -v"
