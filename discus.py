@@ -413,13 +413,13 @@ def format_fields(f, w):
 def get_layout(headers, reports):
     graph_column_width = 14
     widths = [11, 11, 12, 12, 8, graph_column_width]
-    inputs = [copy.deepcopy(headers)] + copy.deepcopy(reports)
+    data = [copy.deepcopy(headers)] + copy.deepcopy(reports)
 
     size = shutil.get_terminal_size((MINIMUM_WIDTH, 20))
     # limit the width to a minimum and account to the inter-column gap
     columns = max(MINIMUM_WIDTH, size.columns - len(widths))
-    for input in inputs:
-        for i, v in enumerate(input[:-1]):
+    for datum in data:
+        for i, v in enumerate(datum[:-1]):
             if len(v) > widths[i]:
                 widths[i] = len(v)
 
