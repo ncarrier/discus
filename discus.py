@@ -259,7 +259,7 @@ class Disk:
         """Format a percentage as a bar graph."""
         # How many stars to place?
         # -4 accounts for the [] and the starting space
-        width = width - 3
+        width = width - 4
         if isinstance(percent, str):
             bar_width = 0
         else:
@@ -269,10 +269,7 @@ class Disk:
         result = color("safe")
         graph_char = opts["graph_char"]
         graph_fill = opts["graph_fill"]
-        for counter in range(1, width + 1):
-            if counter > bar_width:
-                break
-
+        for counter in range(0, bar_width):
             if counter >= 0.7 * width and counter < 0.85 * width:
                 result = result + color("warning")
             elif counter >= 0.85 * width:
@@ -280,7 +277,7 @@ class Disk:
 
             result = result + graph_char
 
-        result = result + (width - counter) * graph_fill
+        result = result + (width - bar_width) * graph_fill
 
         return "  [" + color("safe") + result + color("normal") + "]"
 
