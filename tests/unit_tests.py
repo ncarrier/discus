@@ -1,7 +1,7 @@
 import unittest
 import argparse
-from discus import StatsFactory, SizeFormatter, DiskData, Mount, parse_options
-from discus import read_mounts
+from discus import StatsFactory, SizeFormatter, DiskData, Disk
+from discus import Mount, parse_options, read_mounts, opts
 
 
 class StatsFactoryTests(unittest.TestCase):
@@ -89,6 +89,17 @@ class DiskDataTests(unittest.TestCase):
         self.assertEqual(d.free, "927.7 KB", "free doesn't match")
         self.assertEqual(d.mount, mount.mount, "mount doesn't match")
         self.assertEqual(d.device, mount.device, "device doesn't match")
+
+
+class DiskTests(unittest.TestCase):
+    """Unit tests for the Disk class"""
+    def test_graph(self):
+        opts["color"] = ""
+        self.assertEqual(Disk.graph(10, 14), "  [*---------]")
+        self.assertEqual(Disk.graph(20, 14), "  [**--------]")
+        self.assertEqual(Disk.graph(50, 14), "  [*****-----]")
+        self.assertEqual(Disk.graph(80, 14), "  [********--]")
+        self.assertEqual(Disk.graph(100, 14), "  [**********]")
 
 
 class ParseOptionsTests(unittest.TestCase):
